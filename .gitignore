@@ -1,0 +1,84 @@
+# ignore env variablres and secrets
+.env
+*.env
+config/
+config/**
+secrets/
+.env-old
+
+# ignore media files
+media/
+*.mkv
+*mp4
+*.wav
+
+
+# ignore logs
+logs/
+logs/**
+logs
+log/
+log/**
+log
+log.*
+*.log
+*.gz
+*.zip
+
+# ignore build dependencies
+**/build
+/dist
+
+# ignore backup files
+*.bac
+*.backup
+backup/**
+
+# ignore credential files
+*.pem
+*.crt 
+*.ca-bundle
+*.p7b
+*.p7s
+*.der
+*.cer 
+*.pfx
+*.p12
+*.key
+
+# ignore temp files
+*.tmp 
+tmp/**
+
+# ignore IDE files
+.idea/
+*.sw*
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# ignore cache
+cache/**
+cache/
+db/
+db/**
+
+# ignore airsonic files
+restore/
+restore/**
+
+# ignore vpn dependencies
+etc
+etc/**
+usr
+usr/**
+

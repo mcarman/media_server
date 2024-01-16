@@ -1,0 +1,885 @@
+ 
+ 
+ ###
+  # Plex- Media Server
+  ###  
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    hostname: $HOSTNAME
+    environment:
+      PLEX_UID: "${PUID:-1000}"
+      PGID:     "${PGID:-1000}"
+      TZ:       "${TZ:-Etc/UTC}"
+      VERSION:  "docker"
+      PLEX_CLAIM: "${PLEX_CLAIM}"
+      PLEX_ADVERTISE_IP: "${HOST_IP}"
+      # - advertize IP
+    networks:
+      - media_net
+    ports:
+      - "32400:32400/tcp"
+      - "3005:3005/tcp"
+      - "8324:8324/tcp"
+      - "32469:32469/tcp"
+      - "1900:1900/udp"
+      - "32410:32410/udp"
+      - "32412:32412/udp"
+      - "32413:32413/udp"
+      - "32414:32414/udp"
+    volumes:
+      - "./media/movies:/movies"
+      - "./media/tv:/tv"
+      - "/var/lib/docker:/var/lib/docker"
+      - "./apps/plex/config:/config"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  ###
+  #  tautulli - Utilities for Plex
+  ###  
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    hostname: $HOSTNAME
+    depends_on:
+      - plex
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+      GUID: "${GUID:-1000}"
+    networks:
+      - media_net
+    ports:
+      - "8181:8181"
+    volumes:
+      - "./apps/tautulli/config:/config"
+      - "./apps/plex/logs:/plexlogs"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    restart: unless-stopped
+
+  ###
+  # Airsonic advanced port 4040
+  ###
+  airsonic:
+    image: lscr.io/linuxserver/airsonic-advanced:latest
+    container_name: airsonic
+    hostname: "$HOSTNAME"
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ  : "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - 4040:4040
+    volumes:
+      - ./media/audio/music:/music
+      - ./media/audio/playlists:/playlists
+      - ./media/audio/podcasts:/podcasts
+      - ./apps/airsonic/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  ###
+  # Heimdall homepage with links to all apps
+  ###
+  heimdall:
+    image: lscr.io/linuxserver/heimdall
+    container_name: heimdall
+    hostname: $HOSTNAME
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ  : "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./apps/heimdall/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    security_opt:
+      - no-new-privileges:true    
+    restart: unless-stopped
+
+  ###
+  # Dashy alternative to heimdall port 4000
+  ###
+  dashy:
+    # build: .
+    image: lissy93/dashy
+    container_name: dashy
+    hostname: $HOSTNAME
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ  : "${TZ:-Etc/UTC}"
+      DASHY_CONFIG: "/app/public/conf.yml"
+    networks:
+      - media_net
+    ports:
+      - 4000:80
+    volumes:
+      - ./apps/dashy/config/config.yml:/app/public/conf.yml
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped    
+    healthcheck:
+      test: [ 'CMD', 'node', '/app/services/healthcheck' ]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  ###
+  # dozzle Log aggregator
+  ###
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    hostname: $HOSTNAME
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+      DOZZLE_LEVEL: "trace"
+    networks:
+      - media_net
+    ports:
+      - "8282:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', '/dozzle', 'healthcheck' ]
+      interval: 5m
+      timeout: 15s
+      retries: 3
+      start_period: 60s
+
+  ###
+  # Smokeping network connectivity monitor port 8383
+  ###
+  smokeping:
+    build:
+      context: $APPDATA/smokeping
+      dockerfile: Dockerfile.smokeping
+      #args: 
+      #  BUILD_DATE:
+      #  VERSION:
+    image: lscr.io/linuxserver/smokeping:latest
+    container_name: smokeping
+    hostname: $HOSTNAME
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - 8383:80
+    volumes:
+      - ./apps/smokeping/config:/config
+      - ./apps/smokeping/data:/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  ###
+  # Samba file share on windows and linux fs
+  ###
+  samba:
+    image: ghcr.io/crazy-max/samba:latest
+    container_name: samba
+    hostname: $HOSTNAME
+    #build:
+    #  context: "$APPDATA/samba/build"
+    #  dockerfile: Dockerfile.samba
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+      SAMBA_LOG_LEVEL: "0"
+      SAMBA_WORKGROUP: "${WORKGROUP:-WORKGROUP}"
+      SAMBA_SERVER_STRING: "${pims:-SAMBA_SERVER_STRING:-%h server}"
+      SAMBA_FOLLOW_SYMLINKS: "yes"
+      SAMBA_WIDE_LINKS: "yes"
+      WSDD2_ENABLE: "1"
+      WSDD2_NETBIOS_NAME: "pims_samba"
+    network_mode: host
+    stdin_open: true
+    tty: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - "./apps/samba/data:/data"
+    #  - "$APPDATA/samba/etc/samba/smb.conf:/etc/samba/smb.conf"
+      - "./media:/samba/media"
+      - "./media/movies:/samba/movies"
+      - "./media/mdc1:/samba/mdc1"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    cap_add:
+      - "CAP_NET_ADMIN"
+      - "CAP_NET_RAW"
+    #healthcheck:
+    #  test: [ 'CMD', 'smbclient', '-L', '\\localhost', '-U', '%', '-m', 'SMB3']
+    #  interval: 1m42s
+    #  timeout: 10s
+    #  retries: 3
+    #  start_period: 40s
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    
+  ###
+  # avahi to advertize the share to linux/mac
+  ###
+  avahi:
+    image: ydkn/avahi
+    container_name: "avahi"
+    hostname: $HOSTNAME
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    depends_on:
+      samba:
+        condition: service_started
+    network_mode: host
+    volumes:
+      - "./apps/avahi/services:/etc/avahi/services:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  ###
+  # Watchtower to automate updates
+  ###
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    hostname: $HOSTNAME
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: "3600"
+    #  command: --interval 3600
+    networks:
+      - media_net
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    restart: unless-stopped
+
+  ###
+  # snippet collections
+  ###
+  snippets:
+    image: pawelmalak/snippet-box:dev
+    container_name: snippets
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - 5001:5000  
+    volumes:
+      - "./apps/snippets/data:/app/data"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  ###
+  # syncthing to sync files between devices
+  ###
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:latest
+    container_name: syncthing
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - 8384:8384
+      - 22000:22000/tcp
+      - 22000:22000/udp
+      - 21027:21027/udp
+    volumes:
+      - "./apps/syncthing/config:/config"
+      - ".apps/sync/data:/data1"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    #  - /path/to/data2:/data2
+    security_opt:
+      - no-new-privileges:true  
+    restart: unless-stopped
+
+  ###
+  # sabnzbd - usenet downloader
+  ###
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - 8085:8080
+      - 9090:9090
+    volumes:
+      - "./apps/sabnzbd/config:/config"
+      - "./media/usenet/completed:/completed"
+      - "./media/usenet/incomplete:/incomplete"
+      - "./apps/sabnzbd/config/scripts:/config/scripts"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+  
+  ###
+  # nzbhydra2 - usenet indexer
+  ###
+  nzbhydra2:
+    image: lscr.io/linuxserver/nzbhydra2:latest
+    container_name: nzbhydra2
+    depends_on: 
+      - sabnzbd
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - 5076:5076
+    volumes:
+      - "./apps/nzbhydra2/config:/config"
+      - "./media/usenet/downloads:/downloads"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true  
+    restart: unless-stopped
+
+  ###
+  # radarr - movie downloader
+  ###
+  radarr:
+    image: lscr.io/linuxserver/radarr:5.1.3
+    container_name: radarr
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+     #UMASK_SET: "022"
+    networks: 
+      - media_net
+    ports:
+      - 7878:7878
+    volumes:
+      - "./apps/radarr/config:/config"
+      - "./media/movies:/movies" #optional
+      - "./apps/media/usenet/downloads:/downloads" #optional
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true      
+    restart: unless-stopped
+
+  ###
+  # sonarr - tv show downloader
+  ###
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    networks: 
+      - media_net
+    ports:
+      - 8989:8989
+    volumes:
+      - "./apps/sonarr/config:/config"
+      - "./media/tv:/tv" #optional
+      - "./media/usenet/downloADS:/downloads" #optional
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  ###
+  # bazarr - subtitles downloader
+  ###
+  bazarr: 
+    image: linuxserver/bazarr
+    container_name: bazarr
+    depends_on:
+      sonarr:
+        condition: service_started
+      radarr:
+        condition: service_started 
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ: "${TZ:-Etc/UTC}"   
+    networks:
+      - media_net
+    ports:
+      - 6767:6767
+    volumes:
+      - "./apps/bazarr/config:/config"
+      - "./media/movies:/movies"
+      - "./media/tv:/tv"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  ###
+  # qbittorrent - torrent downloader
+  ###
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    cap_add:
+      - NET_ADMIN
+    depends_on: 
+      gluetun:
+        condition: service_healthy
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+      WEBUI_PORT: "${WEBUI_PORT:-8080}"
+      FIREWALL_OUTBOUND_SUBNETS: 172.20.0.0/16,10.0.0.0/24 
+    network_mode: "service:gluetun" # for vpn 
+    volumes:
+      - "./apps/qbittorrent/config:/config"
+      - "./media/torrents/downloads:/downloads"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    restart: unless-stopped
+  
+  ###
+  #prowler - torrent indexer
+  ###
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+      UMASK: "022"
+    depends_on:
+      - radarr
+      - sonarr
+    volumes:
+      - "./apps/prowlarr/config:/config"
+    ports:
+      - "9696:9696"
+    networks:
+      - media_net
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  ###
+  # gluetun - vpn and kill switch
+  # ##
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    hostname: gluetun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+      - SYS_ADMIN
+    environment:
+      VPN_SERVICE_PROVIDER: "nordvpn"
+      VPN_TYPE: "openvpn" # openvpn or wireguard
+      OPENVPN_USER: "$NVPN_MAN_USER"
+      OPENVPN_PASSWORD: "$NVPN_MAN_PASSWD"
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+      # QUERY: 'filters\[servers_groups\]\[identifier\]=legacy_p2p'
+      #VPN_PASSWORD: $NVPN_PASSWORD
+      #NVPN_PASSWORD: $NVPN_PASSWORD
+      SERVER_REGIONS: "US West,US East,Canada"
+      UPDATER_PERIOD: "24h"
+      #WIREGUARD_PRIVATE_KEY: "$NVPN_WIREGUARD_PRIVATE_KEY"
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "./apps/gluetun/config:/gluetun"
+      - "/lib/modules:/lib/modules:ro"
+    networks:
+      - media_net
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+      - "6999:6999"
+      - "${WEBUI_PORT:-8080}:8080" 
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+#####
+
+ 
+ 
+ 
+  ###
+  # wsdd to advertize name to the network for samba
+  ###
+  ##wsdd:
+  ##  image: viniciusleterio/wsdd
+  ##  container_name: wsdd
+  #  build:
+  #    context: $APPDATA/wsdd
+  #    dockerfile: Dockerfile.wsdd
+  #    args:
+  #      - VERSION
+  #      - WSDD_VERSION
+  ##      - WSDD2_VERSION
+  #      - HOSTNAME
+  #      - WORKGROUP
+  #      - PUID
+  #      - PGID
+  #  hostname: $HOSTNAME
+  #  depends_on:
+  #    - samba
+  #  network_mode: host
+  #  volumes:
+  #    - $APPDATA/wsdd/:/wsdd
+  #    - /etc/localtime:/etc/localtime:ro
+  #    - /etc/timezone:/etc/timezone:ro
+  #  environment:
+  #    PUID: "${PUID:-1000}"
+  #    PGID: "${PGID:-1000}"
+  #    TZ  : "${TZ:-Etc/UTC}"
+  #    HOSTNAME      : "$HOSTNAME"
+  #    WORKGROUP     : "$WORKGROUP"
+  #    VERSION       : "${VERSION:-1.0.0}"
+  #    WSDD2_VERSION : "${WSDD2_VERSION:-1.8.7}"
+  #    WSDD_VERSION  : "${WSDD_VERSION:-0.7.1}"
+  #    BUILD_DATE    : "${BUILD_DATE:-30Jul2023}"
+  #  cap_add:
+  #    - CAP_NET_ADMIN
+  #  stdin_open: true
+  #  tty: true
+  #  restart: unless-stopped
+
+   ###
+ # cloudflare for /var/run/docker
+ ###
+ #  cloudflare-ddns:
+ #    image: oznu/cloudflare-ddns:latest
+ #    restart: unless-stopped
+ #    environment:
+ #      - API_KEY=${CF_API_TOKEN]
+ #      - ZONE=bret.dk
+ #      - SUBDOMAIN=ddns
+ #      - PROXIED=false 
+ #      - PUID=${PUID:-1000}
+ #      - PGID=${PGID:-1000}
+ #      - TZ=${TZ:-Etc/UTC}
+ #    networks:
+ #      - media_net
+ #####
+
+ ###
+# nord vpn 
+### 
+#nvpn:
+#  image: ghcr.io/bubuntux/nordlynx
+#  container_name: nvpn
+#  hostname: $HOSTNAME
+#  cap_add:
+#    - NET_ADMIN
+#    - SYS_MODLE
+#  environment
+#    PUID: ${PID:-1000}
+#    PGID: ${PID:-1000}
+#    TZ:   ${T:-Etc/UTC}
+#    PRIVATE_KY: "$NVPN_PRIVATE_KEY"
+#    QUERY: 'flters\[servers_groups\]\[identifier\]=legacy_p2p'
+#    TOKEN: "$VPN_TOKEN"
+#    NET_LOCAL "$NVPN_NETWORK"
+#  ports:
+#    - "6999:699"
+#    - "${WEBUI_PORT:-8080}:8080"
+#    - "6881:6881"
+#    - "6881:6881/udp"
+#  stdin_open: true
+#  tty: true
+#  tmpfs:
+#    - /run
+#    - /tmp
+#  security_opt:
+#    - label:disable
+#  devices:
+#    - /dev/net/tun
+#  sysctls:
+#    - net.ipv4.conf.all.src_valid_mark=1 # maybe
+#    - net.ipv4.conf.all.rp_filter=2 # maybe; set reverse path filter to loose mode
+#    - net.ipv6.conf.all.disable_ipv6=1 # disable ipv6; recommended  if using ipv4 only
+#  restart: unless-stopped
+
+
+  # docker-compose file for running paperless from the docker container registry.
+# This file contains everything paperless needs to run.
+# Paperless supports amd64, arm and arm64 hardware.
+#
+# All compose files of paperless configure paperless in the following way:
+#
+# - Paperless is (re)started on system boot, if it was running before shutdown.
+# - Docker volumes for storing data are managed by Docker.
+# - Folders for importing and exporting files are created in the same directory
+#   as this file and mounted to the correct folders inside the container.
+# - Paperless listens on port 8000.
+#
+# In addition to that, this docker-compose file adds the following optional
+# configurations:
+#
+# - Instead of SQLite (default), PostgreSQL is used as the database server.
+# - Apache Tika and Gotenberg servers are started with paperless and paperless
+#   is configured to use these services. These provide support for consuming
+#   Office documents (Word, Excel, Power Point and their LibreOffice counter-
+#   parts.
+#
+# To install and update paperless with this file, do the following:
+#
+# - Copy this file as 'docker-compose.yml' and the files 'docker-compose.env'
+#   and '.env' into a folder.
+# - Run 'docker-compose pull'.
+# - Run 'docker-compose run --rm webserver createsuperuser' to create a user.
+# - Run 'docker-compose up -d'.
+#
+# For more extensive installation and update instructions, refer to the
+# documentation.
+
+###
+# redis - broker for paperless
+###
+  #broker:
+  #  image: docker.io/library/redis:7
+  #  container_name: broker
+  #  networks:
+  #    - media_net
+  #  ports:
+  #    - 6379:6379
+  #  volumes:
+  #    - pp_redis_data:/data
+  #  security_opt:
+  #    - no-new-privileges:true
+  #  restart: unless-stopped
+    
+  ###
+  # postgres - database for paperless
+  ###
+  #pg-db:
+  #  image: docker.io/library/postgres:15
+  #  container_name: pg-db
+  #  networks:
+  #    - media_net
+  #  volumes:
+  #    - pp_pg_data:/var/lib/postgresql/data
+  #  environment:
+  #    POSTGRES_DB: ${POSTGRES_DB:-paperless}
+  #    POSTGRES_USER: ${POSTGRES_USER:-paperless}
+  #    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_pass}
+  #  restart: unless-stopped
+
+  ###
+  # paperless - document management
+  ###
+  #paperless:
+  #  image: ghcr.io/paperless-ngx/paperless-ngx:latest
+  #  depends_on:
+  #    - pg-db
+  #    - broker
+  #    - gotenberg
+  #    - tika
+  #  networks:
+  #    - media_net
+  #  ports:
+  #    - "8888:8000"
+  #  volumes:
+  #    - pp_pg_data:/usr/src/paperless/data
+  #    - pp_media:/usr/src/paperless/media
+  #    - $APPDATA/paperless/export:/usr/src/paperless/export
+  #    - $APPDATA/paperles/consume:/usr/src/paperless/consume
+  #  environment:
+  #    PAPERLESS_REDIS: ${PAPERLESS_REDIS:-'redis://broker:6379'}
+  #    PAPERLESS_DBHOST: $PAPERLESS_DBHOST:-"db"}
+  #    PAPERLESS_TIKA_ENABLED: 1
+  #    PAPERLESS_GOTENBERG_ENDPOINT: http://gotenberg:3000
+  #    PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+  #    USERMAP_UID: ${PUID:-1000}
+  #    USERMAP_GID: ${PGID:-100}
+  #    PAPERLESS_TIME_ZONE: ${TZ:-Etc/UTC}
+  #    PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY:-pqperless_secret_key}
+  #  restart: unless-stopped
+  #  healthcheck:
+  #    test: ["CMD", "curl", "-fs", "-S", "--max-time", "2", "http://localhost:8000"]
+  #    interval: 75s
+  #    timeout: 10s
+  #    retries: 5
+
+  ###
+  # gotenberg - document converter
+  ###
+  #gotenberg:
+  #  image: docker.io/gotenberg/gotenberg:7.8
+  #  container_name: gotenberg
+  #  networks:
+  #    - media_net
+  #  ports:
+  #    - "3000:3000"
+  #  command:
+  #    - "gotenberg"
+  #    - "--chromium-disable-javascript=true"
+  #    - "--chromium-allow-list=file:///tmp/.*"
+  #  security_opt:
+  #    - no-new-privileges:true  
+  #  restart: unless-stopped
+
+  ###
+  # tika - document converter
+  ###
+  #tika:
+  #  image: ghcr.io/paperless-ngx/tika:latest
+  #  container_name: tika
+  #  networks:
+  #    - media_net
+  #  ports:
+  #    - "9998:9998"
+  #  restart: unless-stopped
+
+
+# The UID and GID of the user used to run paperless in the container. Set this
+# to your UID and GID on the host so that you have write access to the
+# consumption directory.
+#      USERMAP_UID: 1000
+#      USERMAP_GID: 100
+# Additional languages to install for text recognition, separated by a
+# whitespace. Note that this is
+# different from PAPERLESS_OCR_LANGUAGE (default=eng), which defines the
+# language used for OCR.
+# The container installs English, German, Italian, Spanish and French by
+# default.
+# See https://packages.debian.org/search?keywords=tesseract-ocr-&searchon=names&suite=buster
+# for available languages.
+      #PAPERLESS_OCR_LANGUAGES: tur ces
+# Adjust this key if you plan to make paperless available publicly. It should
+# be a very long sequence of random characters. You don't need to remember it.
+      #PAPERLESS_SECRET_KEY: change-me
+# Use this variable to set a timezone for the Paperless Docker containers. If not specified, defaults to UTC.
+      #PAPERLESS_TIME_ZONE: America/Los_Angeles
+# The default language to use for OCR. Set this to the language most of your
+# documents are written in.
+      #PAPERLESS_OCR_LANGUAGE: eng
+
+  ###
+  # flaresolverr - cloudflare resolver
+  ###
+#  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+#    image: ghcr.io/flaresolverr/flaresolverr:latest
+#    container_name: flaresolverr
+#    environment:
+#      - PUID=${PUID:-1000}
+#      - PGID=${PGID:-995}
+#      - LOG_LEVEL=${FS_LOG_LEVEL:-info}
+#      - LOG_HTML=${FS_LOG_HTML:-false}
+#      - CAPTCHA_SOLVER=${FS_CAPTCHA_SOLVER:-none}
+#      - TZ=${TZ:-Etc/UTC}
+#      - PORT=${FS_PORT:-8191}
+#    ports:
+#      - "${PORT:-8191}:8191"
+#    networks:
+#      - default
+#    restart: unless-stopped
+
+
+###
+  # wsddn to advertize name to the network for samba
+  ###
+  #wsddn:
+  #  image: wsddn
+  #  container_name: wsddn
+  #  hostname: ${HOSTNAME:-wsddn}
+  #  build:
+  #    context: $APPDATA/wsddn
+  #    dockerfile: Dockerfile.wsddn
+  #    args:
+  #      - BUILD_DATE
+  #      - WSDDN_VERSION
+  #      - WSDDN_UUID
+  #      - HOSTNAME
+  #      - WORKGROUP
+  #  environment:
+  #    PUID : ${PUID:-1000}
+  #    PGID : ${PGID:-1000}
+  #    TZ   : ${TZ:-Etc/UTC}
+  #    UMASK: 002
+  #    HOSTNAME      : "$HOSTNAME"
+  #    WORKGROUP     : "${WORKGROUP:-WORKGROUP}"
+  #    VERSION       : "${WSDDN_VERSION:-1.7.2}"
+  #    BUILD_DATE    : "${BUILD_DATE:-30Oct2023}"
+  #    WSDDN_UUID    : "${WSDDN_UUID:-00000000-0000-0000-0000-000000000000}" 
+  #  depends_on:
+  #    - samba
+  #  network_mode: host
+  #  volumes:
+  #    - "$APPDATA/wsddn/etc/wsddn.conf:/etc/wsddn.conf"
+  #    - "$APPDATA/samba/etc/samba/smb.conf:/etc/samba/smb.conf"
+  #    - "/etc/localtime:/etc/localtime:ro"
+  #    - "/etc/timezone:/etc/timezone:ro"
+  #  cap_add:
+  #    - NET_ADMIN
+  #  stdin_open: true
+  #  tty: true
+  #  security_opt:
+  #    - no-new-privileges:true
+  #  restart: unless-stopped

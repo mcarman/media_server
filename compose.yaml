@@ -1,0 +1,92 @@
+
+version: '3.9'
+
+#####
+# Common Configs
+##### 
+##  environment: 
+#    PUID: "${PUID:-1000}" 
+#    PGID: "${PGID:-1000}"
+#    TZ: "${TZ:-Etc/UTC}"
+
+#x-logging: &logging_def
+#    driver: "json-file"
+#    options:
+#      max-size: "10m"
+#      max-file: "3"
+#      compress: "true"
+
+#x-healthcheck:
+#  healthcheck:
+#    test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+#    interval: 1m30s
+#    timeout: 10s
+#    retries: 3
+#    start_period: 40s
+
+
+#####
+# project name
+#####
+name: media_server
+
+#####
+# services section
+#####
+services:
+
+  ###
+  # Portainer - Manage docker contsainers and stack
+  ###
+  portainer:
+    image: portainer/portainer-ce:linux-arm64
+    container_name: portainer
+    hostname: $HOSTNAME
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    volumes:
+      - "/var/lib/docker:/var/lib/docker"
+      - "portainer_data:/data"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  
+
+#####
+# Volumes section
+#####
+volumes:
+  portainer_data:
+    external: true
+#  pp_data:
+#    external: true
+#  pp_media:
+#    external: true
+#  pp_pg_data:
+#    external: true
+#  pp_redis_data:
+#    external: true
+
+####
+# Networks 
+###
+networks:
+  media_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.5.0.0/24
+          gateway: 10.5.0.1
+
