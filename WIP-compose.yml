@@ -1,42 +1,6 @@
  
  
- ###
-  # Plex- Media Server
-  ###  
-  plex:
-    image: lscr.io/linuxserver/plex:latest
-    container_name: plex
-    hostname: $HOSTNAME
-    environment:
-      PLEX_UID: "${PUID:-1000}"
-      PGID:     "${PGID:-1000}"
-      TZ:       "${TZ:-Etc/UTC}"
-      VERSION:  "docker"
-      PLEX_CLAIM: "${PLEX_CLAIM}"
-      PLEX_ADVERTISE_IP: "${HOST_IP}"
-      # - advertize IP
-    networks:
-      - media_net
-    ports:
-      - "32400:32400/tcp"
-      - "3005:3005/tcp"
-      - "8324:8324/tcp"
-      - "32469:32469/tcp"
-      - "1900:1900/udp"
-      - "32410:32410/udp"
-      - "32412:32412/udp"
-      - "32413:32413/udp"
-      - "32414:32414/udp"
-    volumes:
-      - "./media/movies:/movies"
-      - "./media/tv:/tv"
-      - "/var/lib/docker:/var/lib/docker"
-      - "./apps/plex/config:/config"
-      - "/etc/localtime:/etc/localtime:ro"
-      - "/etc/timezone:/etc/timezone:ro"
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
+ 
 
   ###
   #  tautulli - Utilities for Plex
