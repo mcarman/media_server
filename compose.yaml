@@ -89,8 +89,8 @@ services:
       - "32413:32413/udp"
       - "32414:32414/udp"
     volumes:
-      - "./media/movies:/movies"
-      - "./media/tv:/tv"
+      - "./media/disc1/media/Movies:/movies"
+      - "./media/disc1/media/tv:/tv"
       - "/var/lib/docker:/var/lib/docker"
       - "./apps/plex/config:/config"
       - "./apps/plex/config/Preferences.xml:$PLEX_PREF"
