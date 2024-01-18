@@ -70,7 +70,7 @@ services:
     hostname: $HOSTNAME
     environment:
       PLEX_UID: "${PUID:-1000}"
-      PGID:     "${PGID:-1000}"
+      PLEX_GID: "${PGID:-1000}"
       TZ:       "${TZ:-Etc/UTC}"
       VERSION:  "${PLEX_VERSION:-docker}"
       PLEX_CLAIM: "${PLEX_CLAIM}"
@@ -100,6 +100,35 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
   
+  ###
+  #  tautulli - Utilities for Plex
+  ###
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    hostname: $HOSTNAME
+    depends_on:
+      plex:
+        condition: service_started
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+      GUID: "${GUID:-1000}"
+    networks:
+      - media_net
+    ports:
+      - "8181:8181"
+    volumes:
+      - "./apps/tautulli/config:/config"
+      - "./apps/plex/logs:/plexlogs"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+    
 
 #####
 # Volumes section
