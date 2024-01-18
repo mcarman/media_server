@@ -182,28 +182,6 @@ avahi:
   restart: unless-stopped
 
 ###
-# Watchtower to automate updates
-###
-watchtower:
-  image: containrrr/watchtower:latest
-  container_name: watchtower
-  hostname: $HOSTNAME
-  environment:
-    PUID: "${PUID:-1000}"
-    PGID: "${PGID:-1000}"
-    TZ: "${TZ:-Etc/UTC}"
-    WATCHTOWER_CLEANUP: "true"
-    WATCHTOWER_POLL_INTERVAL: "3600"
-  #  command: --interval 3600
-  networks:
-    - media_net
-  volumes:
-    - "/var/run/docker.sock:/var/run/docker.sock"
-    - "/etc/localtime:/etc/localtime:ro"
-    - "/etc/timezone:/etc/timezone:ro"
-  restart: unless-stopped
-
-###
 # snippet collections
 ###
 snippets:
@@ -221,33 +199,6 @@ snippets:
     - "./apps/snippets/data:/app/data"
     - "/etc/localtime:/etc/localtime:ro"
     - "/etc/timezone:/etc/timezone:ro"
-  security_opt:
-    - no-new-privileges:true
-  restart: unless-stopped
-
-###
-# syncthing to sync files between devices
-###
-syncthing:
-  image: lscr.io/linuxserver/syncthing:latest
-  container_name: syncthing
-  environment:
-    PUID: "${PUID:-1000}"
-    PGID: "${PGID:-1000}"
-    TZ: "${TZ:-Etc/UTC}"
-  networks:
-    - media_net
-  ports:
-    - 8384:8384
-    - 22000:22000/tcp
-    - 22000:22000/udp
-    - 21027:21027/udp
-  volumes:
-    - "./apps/syncthing/config:/config"
-    - ".apps/sync/data:/data1"
-    - "/etc/localtime:/etc/localtime:ro"
-    - "/etc/timezone:/etc/timezone:ro"
-  #  - /path/to/data2:/data2
   security_opt:
     - no-new-privileges:true
   restart: unless-stopped
