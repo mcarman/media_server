@@ -233,6 +233,9 @@ networks:
         - subnet: 10.5.0.0/24
           gateway: 10.5.0.1
 
+#####
+# Secrets
+#####
 secrets:
   plex_claim:
     file: ./run/secrets.d/plex_claim.txt
