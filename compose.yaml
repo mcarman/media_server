@@ -92,7 +92,7 @@ services:
       - "./media/disc1/media/Movies:/movies"
       - "./media/disc1/media/tv:/tv"
       - "/var/lib/docker:/var/lib/docker"
-      - "./apps/plex/config:/config"
+      - "plex_data:/config"
       - "./apps/plex/config/Preferences.xml:$PLEX_PREF"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
@@ -106,6 +106,8 @@ services:
 #####
 volumes:
   portainer_data:
+    external: true
+  plex_data:
     external: true
 #  pp_data:
 #    external: true
