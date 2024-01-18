@@ -128,8 +128,32 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
 
-    
-
+  ###
+  # Airsonic advanced port 4040
+  ###
+  airsonic:
+    image: lscr.io/linuxserver/airsonic-advanced:latest
+    container_name: airsonic
+    hostname: "$HOSTNAME"
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - 4040:4040
+    volumes:
+      - ./media/disc1/media/audio/music:/music
+      - ./media/disc1/media/audio/playlists:/playlists
+      - ./media/disc1/media/audio/podcasts:/podcasts
+      - ./apps/airsonic/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+  
 #####
 # Volumes section
 #####
