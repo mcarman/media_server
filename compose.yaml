@@ -73,9 +73,10 @@ services:
       PLEX_GID: "${PGID:-1000}"
       TZ:       "${TZ:-Etc/UTC}"
       VERSION:  "${PLEX_VERSION:-docker}"
-      PLEX_CLAIM: "${PLEX_CLAIM}"
+      PLEX_CLAIM_FILE:   "/run/secrets/plex_claim"
       PLEX_ADVERTISE_IP: "${HOST_IP}:32400"
-      # - advertize IP
+    secrets:
+      - plex_claim
     networks:
       - media_net
     ports:
@@ -232,3 +233,6 @@ networks:
         - subnet: 10.5.0.0/24
           gateway: 10.5.0.1
 
+secrets:
+  plex_claim:
+    file: ./run/secrets.d/plex_claim.txt
