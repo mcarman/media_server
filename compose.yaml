@@ -183,6 +183,33 @@ services:
     restart: unless-stopped 
 
   ###
+  #  rpi-monitor - monitor the pi
+  ###
+  rpi-monitor:
+    image: michaelmiklis/rpi-monitor:latest
+    container_name: rpi-monitor
+    hostname: $HOSTNAME
+    networks:
+      - media_net
+    ports:
+      - 8888:8888
+    volumes:
+      - "/opt/vc:/opt/vc"
+      - "/boot:/boot"
+      - "/sys:/dockerhost/sys:ro"
+      - "/etc:/dockerhost/etc:ro"
+      - "/proc:/dockerhost/proc:ro"
+      - "/usr/lib:/dockerhost/usr/lib:ro"
+      - "./apps/rpi-monitor/config/rpimonitor.conf:/etc/rpimonitor/data.conf"
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    devices:
+      - "/dev/vchiq:/dev/vchiq"
+      - "/dev/vcsm:/dev/vcsm"
+  
+
+  ###
   # Watchtower to automate updates
   ###
   watchtower:
