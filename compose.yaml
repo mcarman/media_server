@@ -200,7 +200,8 @@ services:
       - "/etc:/dockerhost/etc:ro"
       - "/proc:/dockerhost/proc:ro"
       - "/usr/lib:/dockerhost/usr/lib:ro"
-      - "./apps/rpi-monitor/config/rpimonitor.conf:/etc/rpimonitor/data.conf"
+      - "./apps/rpimonitor/config/daemon.conf:/etc/rpimonitor/daemon.conf"
+      - "./apps/rpimonitor/config/data.conf:/etc/rpimonitor/data.conf"
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
