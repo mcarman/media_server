@@ -4,10 +4,10 @@ version: '3.9'
 #####
 # Common Configs
 ##### 
-##  environment: 
-#    PUID: "${PUID:-1000}" 
-#    PGID: "${PGID:-1000}"
-#    TZ: "${TZ:-Etc/UTC}"
+x-environment: &default_env
+    PUID: "${PUID:-1000}"
+    PGID: "${PGID:-1000}"
+    TZ: "${TZ:-Etc/UTC}"
 
 #x-logging: &logging_def
 #    driver: "json-file"
@@ -43,9 +43,10 @@ services:
     container_name: portainer
     hostname: $HOSTNAME
     environment:
-      PUID: "${PUID:-1000}"
-      PGID: "${PGID:-1000}"
-      TZ:   "${TZ:-Etc/UTC}"
+      << : *default_env
+      #PUID: "${PUID:-1000}"
+      #PGID: "${PGID:-1000}"
+      #TZ:   "${TZ:-Etc/UTC}"
     networks:
       - media_net
     ports:
@@ -75,6 +76,7 @@ services:
       VERSION:  "${PLEX_VERSION:-docker}"
       PLEX_CLAIM_FILE:   "/run/secrets/plex_claim"
       PLEX_ADVERTISE_IP: "${HOST_IP}:32400"
+      DOCKER_MODS: "ghcr.io/lizardbyte/themerr-plex:latest"
     secrets:
       - plex_claim
     networks:
@@ -94,7 +96,6 @@ services:
       - "./media/disc1/media/tv:/tv"
       - "/var/lib/docker:/var/lib/docker"
       - "plex_data:/config"
-      - "./apps/plex/config/Preferences.xml:$PLEX_PREF"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     security_opt:
@@ -107,7 +108,6 @@ services:
   tautulli:
     image: lscr.io/linuxserver/tautulli:latest
     container_name: tautulli
-    hostname: $HOSTNAME
     depends_on:
       plex:
         condition: service_started
@@ -116,6 +116,7 @@ services:
       PGID: "${PGID:-1000}"
       TZ:   "${TZ:-Etc/UTC}"
       GUID: "${GUID:-1000}"
+      TAUTULLI_GITHUB_AUTH: ${TAUTULLI_GITHUB_AUTH}
     networks:
       - media_net
     ports:
@@ -135,7 +136,6 @@ services:
   airsonic:
     image: lscr.io/linuxserver/airsonic-advanced:latest
     container_name: airsonic
-    hostname: "$HOSTNAME"
     environment:
       PUID: "${PUID:-1000}"
       PGID: "${PGID:-1000}"
@@ -185,30 +185,30 @@ services:
   ###
   #  rpi-monitor - monitor the pi
   ###
-  rpi-monitor:
-    image: michaelmiklis/rpi-monitor:latest
-    container_name: rpi-monitor
-    hostname: $HOSTNAME
-    networks:
-      - media_net
-    ports:
-      - 8888:8888
-    volumes:
-      - "/opt/vc:/opt/vc"
-      - "/boot:/boot"
-      - "/sys:/dockerhost/sys:ro"
-      - "/etc:/dockerhost/etc:ro"
-      - "/proc:/dockerhost/proc:ro"
-      - "/usr/lib:/dockerhost/usr/lib:ro"
-      - "./apps/rpimonitor/config/daemon.conf:/etc/rpimonitor/daemon.conf"
-      - "./apps/rpimonitor/config/data.conf:/etc/rpimonitor/data.conf"
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-    devices:
-      - "/dev/vchiq:/dev/vchiq"
-      - "/dev/vcsm:/dev/vcsm"
-  
+#  rpi-monitor:
+#    image: michaelmiklis/rpi-monitor:latest
+#    container_name: rpi-monitor
+#    hostname: $HOSTNAME
+#    networks:
+#      - media_net
+#    ports:
+#      - 8888:8888
+#    volumes:
+#      - "/opt/vc:/opt/vc"
+#      - "/boot:/boot"
+#      - "/sys:/dockerhost/sys:ro"
+#      - "/etc:/dockerhost/etc:ro"
+#      - "/proc:/dockerhost/proc:ro"
+#      - "/usr/lib:/dockerhost/usr/lib:ro"
+#      - "./apps/rpimonitor/config/daemon.conf:/etc/rpimonitor/daemon.conf"
+#      - "./apps/rpimonitor/config/data.conf:/etc/rpimonitor/data.conf"
+#    security_opt:
+#      - no-new-privileges:true
+#    restart: unless-stopped
+#    devices:
+#      - "/dev/vchiq:/dev/vchiq"
+#      - "/dev/vcsm:/dev/vcsm"
+#  
 
   ###
   # Watchtower to automate updates

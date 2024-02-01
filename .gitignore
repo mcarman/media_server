@@ -1,16 +1,22 @@
 # ignore env variablres and secrets
 .env
 *.env
-config/
-config/**
+run/
+run/**
 secrets/
+secrets/**
 .env-old
 
 # ignore media files
 media/
+media/**
 *.mkv
-*mp4
+*.mp4
 *.wav
+*.mp3
+
+ignore inm process files
+_*
 
 
 # ignore logs
