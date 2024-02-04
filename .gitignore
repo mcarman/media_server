@@ -81,6 +81,14 @@ db/**
 # ignore airsonic files
 restore/
 restore/**
+/apps/airsonic/config/**
+
+# ignore tautulli files
+/tautulli/config/**
+
+#ignore syncthing 
+./apps/syncthing/config/**
+
 
 # ignore vpn dependencies
 etc
@@ -91,3 +99,6 @@ usr/**
 # ignore secrets
 secrets.d/**
 secrets.d/
+
+# ignore media files
+./media/**
