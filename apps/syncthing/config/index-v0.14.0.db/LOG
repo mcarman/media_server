@@ -152,3 +152,67 @@
 02:04:16.316667 db@janitor F·5 G·1
 02:04:16.317073 db@janitor removing table-28
 02:04:16.317952 db@open done T·93.630619ms
+=============== Feb 3, 2024 (MST) ===============
+23:57:36.774551 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+23:57:36.870163 version@stat F·[1 1] S·961B[561B 400B] Sc·[0.25 0.00]
+23:57:36.870340 db@open opening
+23:57:36.870522 journal@recovery F·1
+23:57:36.876590 journal@recovery recovering @44
+23:57:36.888568 memdb@flush created L0@45 N·2 S·161B "\x04de..can,v472":"\x04de..can,v471"
+23:57:36.889666 version@stat F·[2 1] S·1KiB[722B 400B] Sc·[0.50 0.00]
+23:57:36.932004 db@janitor F·5 G·0
+23:57:36.932255 db@open done T·61.882009ms
+=============== Feb 4, 2024 (MST) ===============
+00:58:05.480873 db@close closing
+00:58:05.482490 db@close done T·1.588392ms
+=============== Feb 4, 2024 (MST) ===============
+00:59:05.548285 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+00:59:05.549569 CURRENT: missing target file: MANIFEST-000047
+00:59:05.550474 CURRENT.bak: missing target file: MANIFEST-000034
+=============== Feb 4, 2024 (MST) ===============
+00:59:05.551177 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+00:59:05.551413 table@recovery F·2
+00:59:05.551440 table@recovery recovering @31
+00:59:05.551934 table@recovery recovered @31 Gk·12 Ck·0 Cb·0 S·400 Q·388
+00:59:05.552005 table@recovery recovering @32
+00:59:05.552442 table@recovery recovered @32 Gk·38 Ck·0 Cb·0 S·561 Q·427
+00:59:05.552514 table@recovery recovered F·2 N·50 Gk·50 Ck·0 Q·427
+00:59:05.771452 version@stat F·[2] S·961B[961B] Sc·[0.50]
+00:59:05.781342 db@open opening
+00:59:05.781674 journal@recovery F·1
+00:59:05.783591 journal@recovery recovering @46
+00:59:05.801587 memdb@flush created L0@47 N·2 S·174B "\x04de..can,v474":"\nla..ime,v475"
+00:59:05.802667 version@stat F·[3] S·1KiB[1KiB] Sc·[0.75]
+00:59:05.812614 db@janitor F·5 G·0
+00:59:05.812702 db@open done T·31.233519ms
+=============== Feb 4, 2024 (MST) ===============
+07:34:25.315229 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+07:34:25.316756 version@stat F·[3] S·1KiB[1KiB] Sc·[0.75]
+07:34:25.316884 db@open opening
+07:34:25.317099 journal@recovery F·1
+07:34:25.319437 journal@recovery recovering @48
+07:34:25.329011 memdb@flush created L0@49 N·7 S·212B "\x04de..can,v483":"\x04de..can,v477"
+07:34:25.331069 version@stat F·[4] S·1KiB[1KiB] Sc·[1.00]
+07:34:25.373223 db@janitor F·6 G·0
+07:34:25.373334 db@open done T·56.4235ms
+07:34:25.373477 table@compaction L0·4 -> L1·0 S·1KiB Q·484
+07:34:25.385059 table@build created L1@52 N·12 S·400B "\x04de..can,v483":"\npr..ion,v47"
+07:34:25.385230 version@stat F·[0 1] S·400B[0B 400B] Sc·[0.00 0.00]
+07:34:25.401205 table@compaction committed F-3 S-947B Ke·0 D·47 T·27.658611ms
+07:34:25.401623 table@remove removed @47
+07:34:25.401895 table@remove removed @32
+07:34:25.402316 table@remove removed @31
+=============== Feb 8, 2024 (MST) ===============
+18:46:54.886118 db@close closing
+18:46:54.886313 db@close done T·193.035µs
+=============== Feb 8, 2024 (MST) ===============
+18:47:14.923590 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+18:47:14.925913 version@stat F·[0 1] S·400B[0B 400B] Sc·[0.00 0.00]
+18:47:14.926010 db@open opening
+18:47:14.926343 journal@recovery F·1
+18:47:14.927432 journal@recovery recovering @50
+18:47:14.958145 memdb@flush created L0@53 N·2 S·162B "\x04de..can,v486":"\x04de..can,v485"
+18:47:14.959173 version@stat F·[1 1] S·562B[162B 400B] Sc·[0.25 0.00]
+18:47:14.999773 db@janitor F·5 G·1
+18:47:14.999832 db@janitor removing table-49
+18:47:14.999948 db@open done T·73.917122ms

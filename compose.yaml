@@ -52,6 +52,7 @@ services:
     ports:
       - "9000:9000"
       - "9443:9443"
+      - "8000:8000"
     volumes:
       - "/var/lib/docker:/var/lib/docker"
       - "portainer_data:/data"
@@ -61,6 +62,62 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+
+  traefik:
+    image: traefik
+    container_name: traefik
+    networks:
+      - media-net
+    ports:
+      - 80:80
+      - 443:443
+    expose:
+      - 8080 # expose the dashboard only in traefik network 
+    volumes:
+      - "./apps/traefik/ssl-certs:/ssl-certs"
+      - "./apps/traefik/etc/traefik:/etc/traefik"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true" # <== Enable traefik on itself to view dashboard and assign subdomain to view it
+      - "traefik.http.routers.traefik_https.rule=Host(`traefik.${DOMAIN}`)" # <== Setting the domain for the dashboard
+      - "traefik.http.routers.traefik_https.entrypoints=web,websecure"
+      - "traefik.http.routers.traefik_https.service=traefik-service"
+      - "traefik.http.services.traefik-service.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik_https.tls=true"
+      - "traefik.http.routers.traefik_https.tls.certresolver=staging"
+      - "traefik.http.routers.traefik_https.middlewares=basic-auth-global"
+      - "traefik.http.middlewares.basic-auth-global.basicauth.usersfile=/etc/traefik/users"
+
+  ###
+  # Dashy alternative to heimdall port 4000
+  ###
+  dashy:
+    # build: .
+    image: lissy93/dashy
+    container_name: dashy
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ: "${TZ:-Etc/UTC}"
+      DASHY_CONFIG: "./apps/dashy/conf.yml"
+    networks:
+      - media_net
+    ports:
+      - 4000:80
+    volumes:
+      - ./apps/dashy/config/config.yml:/app/public/conf.yml
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "/app/services/healthcheck"]
+      interval: 15m
+      timeout: 10s
+      retries: 3
+      start_period: 40s  
 
   ###
   # Plex- Media Server
@@ -183,32 +240,31 @@ services:
     restart: unless-stopped 
 
   ###
-  #  rpi-monitor - monitor the pi
+  # dozzle Log aggregator
   ###
-#  rpi-monitor:
-#    image: michaelmiklis/rpi-monitor:latest
-#    container_name: rpi-monitor
-#    hostname: $HOSTNAME
-#    networks:
-#      - media_net
-#    ports:
-#      - 8888:8888
-#    volumes:
-#      - "/opt/vc:/opt/vc"
-#      - "/boot:/boot"
-#      - "/sys:/dockerhost/sys:ro"
-#      - "/etc:/dockerhost/etc:ro"
-#      - "/proc:/dockerhost/proc:ro"
-#      - "/usr/lib:/dockerhost/usr/lib:ro"
-#      - "./apps/rpimonitor/config/daemon.conf:/etc/rpimonitor/daemon.conf"
-#      - "./apps/rpimonitor/config/data.conf:/etc/rpimonitor/data.conf"
-#    security_opt:
-#      - no-new-privileges:true
-#    restart: unless-stopped
-#    devices:
-#      - "/dev/vchiq:/dev/vchiq"
-#      - "/dev/vcsm:/dev/vcsm"
-#  
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    environment:
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ: "${TZ:-Etc/UTC}"
+      DOZZLE_LEVEL: "trace"
+    networks:
+      - media_net
+    ports:
+      - "8282:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 5m
+      timeout: 15s
+      retries: 3
+      start_period: 60s
 
   ###
   # Watchtower to automate updates

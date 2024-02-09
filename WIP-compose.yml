@@ -22,36 +22,33 @@ heimdall:
     - no-new-privileges:true
   restart: unless-stopped
 
-###
-# Dashy alternative to heimdall port 4000
-###
-dashy:
-  # build: .
-  image: lissy93/dashy
-  container_name: dashy
-  hostname: $HOSTNAME
-  environment:
-    PUID: "${PUID:-1000}"
-    PGID: "${PGID:-1000}"
-    TZ: "${TZ:-Etc/UTC}"
-    DASHY_CONFIG: "/app/public/conf.yml"
-  networks:
-    - media_net
-  ports:
-    - 4000:80
-  volumes:
-    - ./apps/dashy/config/config.yml:/app/public/conf.yml
-    - /etc/localtime:/etc/localtime:ro
-    - /etc/timezone:/etc/timezone:ro
-  security_opt:
-    - no-new-privileges:true
-  restart: unless-stopped
-  healthcheck:
-    test: ["CMD", "node", "/app/services/healthcheck"]
-    interval: 1m30s
-    timeout: 10s
-    retries: 3
-    start_period: 40s
+  ###
+  #  rpi-monitor - monitor the pi
+  ###
+#  rpi-monitor:
+#    image: michaelmiklis/rpi-monitor:latest
+#    container_name: rpi-monitor
+#    hostname: $HOSTNAME
+#    networks:
+#      - media_net
+#    ports:
+#      - 8888:8888
+#    volumes:
+#      - "/opt/vc:/opt/vc"
+#      - "/boot:/boot"
+#      - "/sys:/dockerhost/sys:ro"
+#      - "/etc:/dockerhost/etc:ro"
+#      - "/proc:/dockerhost/proc:ro"
+#      - "/usr/lib:/dockerhost/usr/lib:ro"
+#      - "./apps/rpimonitor/config/daemon.conf:/etc/rpimonitor/daemon.conf"
+#      - "./apps/rpimonitor/config/data.conf:/etc/rpimonitor/data.conf"
+#    security_opt:
+#      - no-new-privileges:true
+#    restart: unless-stopped
+#    devices:
+#      - "/dev/vchiq:/dev/vchiq"
+#      - "/dev/vcsm:/dev/vcsm"
+#
 
 ###
 # dozzle Log aggregator

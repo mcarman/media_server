@@ -15,8 +15,9 @@ media/**
 *.wav
 *.mp3
 
-ignore inm process files
-_*
+#ignore inm process files
+./apps/_*
+apps/_*
 
 
 # ignore logs
@@ -59,7 +60,6 @@ tmp/**
 # ignore IDE files
 .idea/
 *.sw*
-.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -81,14 +81,17 @@ db/**
 # ignore airsonic files
 restore/
 restore/**
-/apps/airsonic/config/**
+./apps/airsonic/config/**
+apps/airsonic/config/**
 
 # ignore tautulli files
-/tautulli/config/**
+./apps/tautulli/config/**
+./apps/tautulli/config/tautulli.*
+apps/tautulli/config/**
 
 #ignore syncthing 
 ./apps/syncthing/config/**
-
+apps/syncthing/config/**
 
 # ignore vpn dependencies
 etc
@@ -97,8 +100,36 @@ usr
 usr/**
 
 # ignore secrets
-secrets.d/**
-secrets.d/
+./secrets.d/**
+./secrets.d/
+./run/secrets.d
+./run/secrets.d/**
+run/secrets.d
+run/secrets.d/**
+
 
 # ignore media files
 ./media/**
+media/**
+
+# ignore dashy files
+./apps/dashy/config/**
+!./apps/dashy/config/config.yml
+apps/dashy/config/**
+!apps/dashy/config/config.yml
+\# ignore WIP files
+./WIP*
+./apps/_*
+WIP*
+apps/_*
+
+# Ignore traefik files
+./apps/traefik/ssl-certs/**
+./apps/traefik/ssl-certs
+./apps/traefik/etc/traefik/users
+apps/traefik/ssl-certs/**
+apps/traefik/etc/traefik/users
+
+# ignore plex files
+./apps/plex/config/**
+apps/plex/config/**
