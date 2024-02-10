@@ -88,10 +88,13 @@ apps/airsonic/config/**
 ./apps/tautulli/config/**
 ./apps/tautulli/config/tautulli.*
 apps/tautulli/config/**
+apps/tautulli/config/tautulli.*
 
 #ignore syncthing 
 ./apps/syncthing/config/**
 apps/syncthing/config/**
+./apps/syncthing/config/index-v0.14.0.db/**
+apps/syncthing/config/index-v0.14.0.db/**
 
 # ignore vpn dependencies
 etc
@@ -116,8 +119,9 @@ media/**
 ./apps/dashy/config/**
 !./apps/dashy/config/config.yml
 apps/dashy/config/**
-!apps/dashy/config/config.yml
-\# ignore WIP files
+!apps/dashy/config/conf.yml
+
+# ignore WIP files
 ./WIP*
 ./apps/_*
 WIP*
