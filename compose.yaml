@@ -83,7 +83,7 @@ services:
       - CF_API_TOKEN_FILE="run/secrets.d/cf_api_key"
     secrets:
       - cf_email
-      - cf_api_key
+      - cf_api_token
     labels:
       - "traefik.enable=true" # <== Enable traefik on itself to view dashboard and assign subdomain to view it
       - "traefik.http.routers.traefik_https.rule=Host(`traefik.${DOMAIN}`)" # <== Setting the domain for the 
@@ -370,3 +370,5 @@ secrets:
     file: ./run/secrets.d/plex_claim.txt
   cf_email:
     file: ./run/secrets.d/cf_email.txt
+  cf_api_token: 
+    file: ./run/secrets.d/cf_api_token.txt

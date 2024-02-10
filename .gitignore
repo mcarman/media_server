@@ -133,6 +133,8 @@ apps/_*
 ./apps/traefik/etc/traefik/users
 apps/traefik/ssl-certs/**
 apps/traefik/etc/traefik/users
+!apps/traefik/etc/traefik/traefik.yml
+!./apps/traefik/etc/traefik/traefik.yml
 
 # ignore plex files
 ./apps/plex/config/**
