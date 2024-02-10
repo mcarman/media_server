@@ -4,7 +4,6 @@
 heimdall:
   image: lscr.io/linuxserver/heimdall
   container_name: heimdall
-  hostname: $HOSTNAME
   environment:
     PUID: "${PUID:-1000}"
     PGID: "${PGID:-1000}"
@@ -48,65 +47,6 @@ heimdall:
 #    devices:
 #      - "/dev/vchiq:/dev/vchiq"
 #      - "/dev/vcsm:/dev/vcsm"
-#
-
-###
-# dozzle Log aggregator
-###
-dozzle:
-  container_name: dozzle
-  image: amir20/dozzle:latest
-  hostname: $HOSTNAME
-  environment:
-    PUID: "${PUID:-1000}"
-    PGID: "${PGID:-1000}"
-    TZ: "${TZ:-Etc/UTC}"
-    DOZZLE_LEVEL: "trace"
-  networks:
-    - media_net
-  ports:
-    - "8282:8080"
-  volumes:
-    - "/var/run/docker.sock:/var/run/docker.sock"
-    - "/etc/localtime:/etc/localtime:ro"
-    - "/etc/timezone:/etc/timezone:ro"
-  restart: unless-stopped
-  healthcheck:
-    test: ["CMD", "/dozzle", "healthcheck"]
-    interval: 5m
-    timeout: 15s
-    retries: 3
-    start_period: 60s
-
-###
-# Smokeping network connectivity monitor port 8383
-###
-smokeping:
-  build:
-    context: $APPDATA/smokeping
-    dockerfile: Dockerfile.smokeping
-    #args:
-    #  BUILD_DATE:
-    #  VERSION:
-  image: lscr.io/linuxserver/smokeping:latest
-  container_name: smokeping
-  hostname: $HOSTNAME
-  environment:
-    PUID: "${PUID:-1000}"
-    PGID: "${PGID:-1000}"
-    TZ: "${TZ:-Etc/UTC}"
-  networks:
-    - media_net
-  ports:
-    - 8383:80
-  volumes:
-    - ./apps/smokeping/config:/config
-    - ./apps/smokeping/data:/data
-    - /etc/localtime:/etc/localtime:ro
-    - /etc/timezone:/etc/timezone:ro
-  security_opt:
-    - no-new-privileges:true
-  restart: unless-stopped
 
 ###
 # Samba file share on windows and linux fs

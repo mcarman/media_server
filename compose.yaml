@@ -78,9 +78,15 @@ services:
       - "./apps/traefik/etc/traefik:/etc/traefik"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     restart: unless-stopped
+    environment:
+      - CF_EMAIL_FILE="run/secrets.d/cf_email"
+      - CF_API_TOKEN_FILE="run/secrets.d/cf_api_key"
+    secrets:
+      - cf_email
+      - cf_api_key
     labels:
       - "traefik.enable=true" # <== Enable traefik on itself to view dashboard and assign subdomain to view it
-      - "traefik.http.routers.traefik_https.rule=Host(`traefik.${DOMAIN}`)" # <== Setting the domain for the dashboard
+      - "traefik.http.routers.traefik_https.rule=Host(`traefik.${DOMAIN}`)" # <== Setting the domain for the 
       - "traefik.http.routers.traefik_https.entrypoints=web,websecure"
       - "traefik.http.routers.traefik_https.service=traefik-service"
       - "traefik.http.services.traefik-service.loadbalancer.server.port=8080"
@@ -106,7 +112,7 @@ services:
     ports:
       - 4000:80
     volumes:
-      - ./apps/dashy/config/config.yml:/app/public/conf.yml
+      - ./apps/dashy/config/conf.yml:/app/public/conf.yml
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     security_opt:
@@ -288,8 +294,47 @@ services:
       - "/etc/timezone:/etc/timezone:ro"
     restart: unless-stopped
 
+  ###
+  # Dashdot - Dashboard for system stats
+  ###
+  dashdot:
+    image: mauricenino/dashdot
+    #build:
+      #context: ./apps/dashdot
+      #dockerfile: Dockerfile.dashdot
+      #target: dev
+    container_name: dashdot
+    environment:
+      DASHDOT_ENABLE_CPU_TEMPS: true
+      DASHDOT_CPU_TEMPS_MODE: "avg" # max
+      DASHDOT_WIDGET_LIST: "os,cpu,storage,ram,network"
+      DASHDOT_ALWAYS_SHOW_PERCENTAGES: true
+      DASHDOT_CPU_LABEL_LIST: "model,cores,frequency" # brand  thread
+      DASHDOT_CPU_CORES_TOGGLE_MODE: toggle # multi-core,average
+      DASHDOT_CPU_POLL_INTERVAL: 5000 # milliseconds
+      DASHDOT_STORAGE_LABEL_LIST: "brand,size,type"
+      DASHDOT_RAM_LABEL_LIST: "size,type,frequency" # brand
+      DASHDOT_NETWORK_LABEL_LIST: "type, speed_up, speed_down, interface_speed, public_ip"
+      DASHDOT_SPEED_TEST_INTERVAL: 240 # minutes, every 4 hrs
+    networks:
+      - media_net
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "3002:3002"
+    volumes:
+      - "./:app"
+      - "/:/mnt/host:ro"
+    tty: true
+    user: "1000"
+    working_dir: /apps
+    privileged: true
+    restart: unless-stopped
+    command:
+      - "yarn run serve"
+
 #####
-# Volumes section
+# Volumes section  
 #####
 volumes:
   portainer_data:
@@ -323,3 +368,5 @@ networks:
 secrets:
   plex_claim:
     file: ./run/secrets.d/plex_claim.txt
+  cf_email:
+    file: ./run/secrets.d/cf_email.txt
