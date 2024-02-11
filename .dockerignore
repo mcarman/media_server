@@ -1,0 +1,3 @@
+apps/dashy/config/**
+!apps/dashy/config/conf.yml
+

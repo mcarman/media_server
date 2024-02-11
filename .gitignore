@@ -1,4 +1,4 @@
-# ignore env variablres and secrets
+# ignore env variables and secrets
 .env
 *.env
 run/

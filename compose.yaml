@@ -67,12 +67,13 @@ services:
     image: traefik
     container_name: traefik
     networks:
-      - media-net
+      - media_net
     ports:
       - 80:80
       - 443:443
+    #   - 8080:8080
     expose:
-      - 8080 # expose the dashboard only in traefik network 
+     - 8080 # expose the dashboard only in traefik network 
     volumes:
       - "./apps/traefik/ssl-certs:/ssl-certs"
       - "./apps/traefik/etc/traefik:/etc/traefik"
@@ -81,6 +82,11 @@ services:
     environment:
       - CF_EMAIL_FILE="run/secrets.d/cf_email"
       - CF_API_TOKEN_FILE="run/secrets.d/cf_api_key"
+      - DOMAIN=${DOMAIN:-example.com}
+      - TZ=${TZ:-Etc/UTC}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - HOST_IP=${HOST_IP}
     secrets:
       - cf_email
       - cf_api_token
@@ -102,11 +108,16 @@ services:
     # build: .
     image: lissy93/dashy
     container_name: dashy
+    hostname: $HOSTNAME
     environment:
       PUID: "${PUID:-1000}"
       PGID: "${PGID:-1000}"
       TZ: "${TZ:-Etc/UTC}"
-      DASHY_CONFIG: "./apps/dashy/conf.yml"
+      DASHY_CONFIG: "./apps/dashy/config/conf.yml"
+      HOSTNAME: "${HOSTNAME:-example.com}"
+      HOST_IP: "${HOST_IP}"
+      DOMAIN: "${DOMAIN}"
+      TAUTULLI_GITHUB_AUTH: ${TAUTULLI_GITHUB_AUTH}
     networks:
       - media_net
     ports:
@@ -171,6 +182,7 @@ services:
   tautulli:
     image: lscr.io/linuxserver/tautulli:latest
     container_name: tautulli
+    hostname: $HOSTNAME
     depends_on:
       plex:
         condition: service_started
@@ -297,13 +309,14 @@ services:
   ###
   # Dashdot - Dashboard for system stats
   ###
-  dashdot:
-    image: mauricenino/dashdot
-    #build:
-      #context: ./apps/dashdot
-      #dockerfile: Dockerfile.dashdot
-      #target: dev
+  dashdot: 
+    image: dashdot #mauricenino/dashdot
+    build:
+      # context: /homes/pims/media_server/apps/dashdot/
+      dockerfile: Dockerfile.dashdot
+      target: dev
     container_name: dashdot
+    # working_dir: /app
     environment:
       DASHDOT_ENABLE_CPU_TEMPS: true
       DASHDOT_CPU_TEMPS_MODE: "avg" # max
@@ -321,13 +334,12 @@ services:
     ports:
       - "3000:3000"
       - "3001:3001"
-      - "3002:3002"
+      # - "3002:3002"
     volumes:
-      - "./:app"
+      - "./:/app"
       - "/:/mnt/host:ro"
     tty: true
     user: "1000"
-    working_dir: /apps
     privileged: true
     restart: unless-stopped
     command:
