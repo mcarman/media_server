@@ -306,45 +306,6 @@ services:
       - "/etc/timezone:/etc/timezone:ro"
     restart: unless-stopped
 
-  ###
-  # Dashdot - Dashboard for system stats
-  ###
-  dashdot: 
-    image: dashdot #mauricenino/dashdot
-    build:
-      # context: /homes/pims/media_server/apps/dashdot/
-      dockerfile: Dockerfile.dashdot
-      target: dev
-    container_name: dashdot
-    # working_dir: /app
-    environment:
-      DASHDOT_ENABLE_CPU_TEMPS: true
-      DASHDOT_CPU_TEMPS_MODE: "avg" # max
-      DASHDOT_WIDGET_LIST: "os,cpu,storage,ram,network"
-      DASHDOT_ALWAYS_SHOW_PERCENTAGES: true
-      DASHDOT_CPU_LABEL_LIST: "model,cores,frequency" # brand  thread
-      DASHDOT_CPU_CORES_TOGGLE_MODE: toggle # multi-core,average
-      DASHDOT_CPU_POLL_INTERVAL: 5000 # milliseconds
-      DASHDOT_STORAGE_LABEL_LIST: "brand,size,type"
-      DASHDOT_RAM_LABEL_LIST: "size,type,frequency" # brand
-      DASHDOT_NETWORK_LABEL_LIST: "type, speed_up, speed_down, interface_speed, public_ip"
-      DASHDOT_SPEED_TEST_INTERVAL: 240 # minutes, every 4 hrs
-    networks:
-      - media_net
-    ports:
-      - "3000:3000"
-      - "3001:3001"
-      # - "3002:3002"
-    volumes:
-      - "./:/app"
-      - "/:/mnt/host:ro"
-    tty: true
-    user: "1000"
-    privileged: true
-    restart: unless-stopped
-    command:
-      - "yarn run serve"
-
 #####
 # Volumes section  
 #####
