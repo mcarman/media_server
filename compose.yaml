@@ -63,47 +63,9 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
 
-  traefik:
-    image: traefik
-    container_name: traefik
-    networks:
-      - media_net
-    ports:
-      - 80:80
-      - 443:443
-    #   - 8080:8080
-    expose:
-     - 8080 # expose the dashboard only in traefik network 
-    volumes:
-      - "./apps/traefik/ssl-certs:/ssl-certs"
-      - "./apps/traefik/etc/traefik:/etc/traefik"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    restart: unless-stopped
-    environment:
-      - CF_EMAIL_FILE="run/secrets.d/cf_email"
-      - CF_API_TOKEN_FILE="run/secrets.d/cf_api_key"
-      - DOMAIN=${DOMAIN:-example.com}
-      - TZ=${TZ:-Etc/UTC}
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - HOST_IP=${HOST_IP}
-    secrets:
-      - cf_email
-      - cf_api_token
-    labels:
-      - "traefik.enable=true" # <== Enable traefik on itself to view dashboard and assign subdomain to view it
-      - "traefik.http.routers.traefik_https.rule=Host(`traefik.${DOMAIN}`)" # <== Setting the domain for the 
-      - "traefik.http.routers.traefik_https.entrypoints=web,websecure"
-      - "traefik.http.routers.traefik_https.service=traefik-service"
-      - "traefik.http.services.traefik-service.loadbalancer.server.port=8080"
-      - "traefik.http.routers.traefik_https.tls=true"
-      - "traefik.http.routers.traefik_https.tls.certresolver=staging"
-      - "traefik.http.routers.traefik_https.middlewares=basic-auth-global"
-      - "traefik.http.middlewares.basic-auth-global.basicauth.usersfile=/etc/traefik/users"
-
   ###
   # Dashy alternative to heimdall port 4000
-  ###
+  ###cd 
   dashy:
     # build: .
     image: lissy93/dashy
@@ -150,7 +112,7 @@ services:
       VERSION:  "${PLEX_VERSION:-docker}"
       PLEX_CLAIM_FILE:   "/run/secrets/plex_claim"
       PLEX_ADVERTISE_IP: "${HOST_IP}:32400"
-      DOCKER_MODS: "ghcr.io/lizardbyte/themerr-plex:latest"
+      # DOCKER_MODS: "ghcr.io/lizardbyte/themerr-plex:latest"
     secrets:
       - plex_claim
     networks:
@@ -191,7 +153,9 @@ services:
       PGID: "${PGID:-1000}"
       TZ:   "${TZ:-Etc/UTC}"
       GUID: "${GUID:-1000}"
-      TAUTULLI_GITHUB_AUTH: ${TAUTULLI_GITHUB_AUTH}
+      TAUTULLI_GITHUB_AUTH_FILE: /run/secrets/TAUTULLI_GITHUB_AUTH_FILE
+    secrets:
+      - tautulli_github_auth
     networks:
       - media_net
     ports:
@@ -305,6 +269,123 @@ services:
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     restart: unless-stopped
+  
+  ###
+  # Prometheus and Grafana for monitoring
+  ###
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    user: "nobody"
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Etc/UTC}
+    volumes:
+      - "./apps/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./apps/prometheus/data:/prometheus/"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'  
+    ports:
+      - 9090:9090
+    depends_on:
+      - cadvisor
+      - node-exporter
+    links:
+      - cadvisor:cadvisor
+      - node-exporter:node-exporter
+    networks:
+      - media_net
+
+  ###
+  # Node Exporter and cAdvisor for monitoring
+  ###
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    restart: unless-stopped
+    pid: host
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
+    volumes:
+      - "/:/host:ro,rslave"
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro" 
+    networks:
+      - media_net
+    ports:
+      - 9100:9100
+
+  ###
+  # cAdvisor for monitoring
+  ###
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.1  #cadvisor-v0.44  #linuxkit/cadvisor:c57efffad1139b2c5df1c3f66c1e3d586ce9e07d-arm64
+    container_name: cadvisor
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - "/:/rootfs:ro"
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/etc/machine-id:/etc/machine-id"
+      - "/dev/disk/:/dev/disk:ro"
+      - "./apps/cadvisor/logs:/var/log/cadvisor"
+    devices:
+      - /dev/kmsg
+    ports:
+      - 8080:8080
+    networks:
+      - media_net
+    command:
+      - '--docker_only=true'
+      - '--housekeeping_interval=33s'
+      - '--disable_metrics=disk,tcp,udp,percpu,sched,process,referenced_memory,cpu_topology'
+      - '--log_dir="/var/log/cadvisor"'
+    #other values: filesystem,cpu,precpu,load,uptime,vmstat,meminfo,netstat,perf,net,cpu,
+  
+  ###
+  # Grafana for monitoring
+  ###
+  grafana:
+    image: grafana/grafana:latest
+    user: ":"
+    container_name: grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    links:
+      - prometheus:prometheus
+    volumes:
+      - ./apps/grafana/config:/var/lib/grafana
+      - ./apps/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Etc/UTC}
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    #  - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    #  - GF_USERS_ALLOW_SIGN_UP=false
+    #  - GF_SERVER_DOMAIN=${DOMAIN}
+    #  - GF_SERVER_ROOT_URL=http://10.0.0.223/grafana
+    #  - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    networks:
+      - media_net
+    ports:
+      - 3000:3000
+
 
 #####
 # Volumes section  
@@ -341,7 +422,9 @@ networks:
 secrets:
   plex_claim:
     file: ./run/secrets.d/plex_claim.txt
-  cf_email:
-    file: ./run/secrets.d/cf_email.txt
-  cf_api_token: 
-    file: ./run/secrets.d/cf_api_token.txt
+  cf_api_email:
+    file: ./run/secrets.d/cf_api_email.txt
+  cf_dns_api_key: 
+    file: ./run/secrets.d/cf_dns_api_key.txt
+  tautulli_github_auth:
+    file: ./run/secrets.d/tautulli_github_auth.txt

@@ -1,27 +1,33 @@
 # Base env variables
-PUID=
-PGID=
-GUID=
-TZ=
-DOCKER_DIR=<path to docker files e.g. ~/docker>
-MEDIA_DIR=<path to where you have the media files mounted
+PUID="your user , enter id on the command line with id -u"
+PGID="your group id"
+GUID="your group id"
+TZ="your timezone in the form of America/New_York"
+DOCKER_DIR="path to docker files e.g. ~/docker"
+MEDIA_DIR="path to where you have the media files mounted"
 
-# Plex variables1
-PLEX_CLAIM=
-#PLEX_UID=
-#PLEX_GID=
-PLEX_TOKEN=
 
-#  Plex Meta Manager Variables
-# PMM_CONFIG= #optional
-PMM_TIME=03:00 #optional
-PMM_RUN=False #optional
-PMM_TEST=False #optional
-PMM_NO_MISSING=False #optional
+PLEX_CLAIM="claim token from plex"
+PLEX_API_TOKEN="plex api token from your plex server"
 
-# TMDB credentials
-TMDB_TOKEN=<the movie database token>
+PMM_TIME="03:00"
+PMM_RUN=False
+PMM_TEST=False
+PMM_NO_MISSING=False
 
-# Trakt login credentials
-TRAKT_CLIENT_ID=<trakt client ID from trakt site>
-TRAKT_CLIENT_SECRET=<trakt secret key from the trakt site>
+PLEX_API_TOKEN="nnn"
+
+
+TMDB_TOKEN="<the movie database token>"
+
+TRAKT_CLIENT_ID="<trakt client ID from trakt site>"
+TRAKT_CLIENT_SECRET="<trakt secret key from the trakt site>"
+
+
+TRAEFIK_AUTH_DEFAULT="admin:$apr1$eo7p06a9$1NqqttOgUMcAVndEGXekL1"
+
+TRAEFIK_AUTH=""
+
+CF_API_EMAIL="<your cloudflare email>"
+CF_DNS_API_KEY="<your scoped cloudflare api key>"
+# user:password here. See https://www.web2generators.com/apache-tools/htpasswd-generator to generate a password

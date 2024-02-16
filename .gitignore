@@ -131,11 +131,25 @@ apps/_*
 ./apps/traefik/ssl-certs/**
 ./apps/traefik/ssl-certs
 ./apps/traefik/etc/traefik/users
-apps/traefik/ssl-certs/**
+apps/traefik/ssl
+-certs/**
 apps/traefik/etc/traefik/users
-!apps/traefik/etc/traefik/traefik.yml
-!./apps/traefik/etc/traefik/traefik.yml
+apps/traefik/etc/traefik/traefik.yml
+./apps/traefik/etc/traefik/traefik.yml
+apps/traefik.d/** */
 
 # ignore plex files
 ./apps/plex/config/**
 apps/plex/config/**
+
+# ignore grafana and prometheus files
+./apps/grafana/config/**
+apps/grafana/config/**
+!./apps/grafana/config/dashboard.json
+!apps/grafana/config/dashboard.json
+./apps/prometheus/data/**
+apps/prometheus/data/**
+
+apps/traefik/** */
+apps/traefik.d/compose-traefik.yaml
+apps/traefik.d/ssl-certs/acme.json

@@ -1,3 +1,73 @@
+
+
+
+traefik:
+    image: arm64v8/traefik
+    container_name: traefik
+    networks:
+      - media_net
+    ports:
+      - 80:80
+      - 443:443
+    #  - 8080:8080
+    #expose:
+     #- 8880 # expose the dashboard only in traefik network 
+    volumes:
+      - "./apps/traefik.d/ssl-certs/acme.json:/acme.json"
+      - "./apps/traefik.d/etc/traefik.yml:/traefik.yml:ro"
+    #  - "./apps/traefik.d/etc/traefik-dynamic.yml:/traefik-dynamic.yml:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    restart: unless-stopped
+    environment:
+    #  - CF_API_EMAIL_FILE=${CF_API_EMAIL} #"run/secrets/cf_api_email"
+    #  - CF_DNS_API_KEY_FILE=${CF_DNS_API_KEY} #"run/secrets/cf_dns_api_key"
+      DOMAIN: ${DOMAIN:-example.com}
+      TZ:     ${TZ:-Etc/UTC}
+      PUID:   ${PUID:-1000}
+      PGID:   ${PGID:-1000}
+      HOST_IP:      ${HOST_IP}
+      CF_API_EMAIL: ${CF_API_EMAIL}
+    #  TRAEFIK_AUTH: ${TRAEFIK_AUTH}
+    #secrets:
+    #  - cf_api_email
+    #  - cf_dns_api_key
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$apr1$bhj0ze1m$FjG7EqZ6OtBLpmAkCgnnL0"
+      - "traefik.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.traefik-secure.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DOMAIN}`)"
+    #  - "traefik.http.routers.traefik-secure.service=traefik"
+      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.certResolver=http"
+    #  - "traefik.http.services.traefik.loadbalancer.server.port=80"
+    #  - "traefik.http.services.traefik.loadbalancer.passHostHeader=true"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+          
+#      - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
+    #  - "traefik.http.routers.traefik-secure.entrypoints=https"
+    #  - "traefik.http.routers.traefik-secure.rule=Host(`traefik.example.com`)"
+    #  - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+    #  - "traefik.http.routers.traefik-secure.tls=true"
+    #  - "traefik.http.routers.traefik-secure.tls.certresolver=http"
+#      - "traefik.http.routers.traefik-secure.service=api@internal"
+  #    - "traefik.enable=true" # <== Enable traefik on itself to view dashboard and assign subdomain
+  #    - "traefik.docker.network=media_net"
+  #    - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DOMAIN}`)" # <== Set the domain
+  #    - "traefik.http.routers.traefik-secure.entrypoints=websecure"
+  #    - "traefik.http.routers.traefik-secure.service=api@interrnal"
+    #  - "traefik.http.services.traefik-service.loadbalancer.server.port=8080"
+  #  - "traefik.http.routers.traefik_https.tls=true"
+    #  - "traefik.http.routers.traefik_https.tls.certresolver=staging"
+  #    - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
+#      - "traefik.http.middlewares.basic-auth-global.basicauth.usersfile=/etc/traefik/users"
+
+
+
 ###
 # Heimdall homepage with links to all apps
 ###
