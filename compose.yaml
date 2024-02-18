@@ -86,6 +86,7 @@ services:
       - 4000:80
     volumes:
       - ./apps/dashy/config/conf.yml:/app/public/conf.yml
+      - ./apps/dashy/icons:/app/public/icons
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     security_opt:

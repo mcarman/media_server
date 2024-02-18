@@ -120,6 +120,8 @@ media/**
 !./apps/dashy/config/config.yml
 apps/dashy/config/**
 !apps/dashy/config/conf.yml
+apps/dashy/icons/** */
+./apps/dashy/icons/**
 
 # ignore WIP files
 ./WIP*
@@ -153,3 +155,10 @@ apps/prometheus/data/**
 apps/traefik/** */
 apps/traefik.d/compose-traefik.yaml
 apps/traefik.d/ssl-certs/acme.json
+
+apps/dashy/icons/png/3cx.png
+.gitignore
+apps/dashy/icons/png/5etools.png
+apps/dashy/icons/png/act.png
+apps/dashy/icons/png/actual.png
+apps/dashy/icons/png/adblock.png

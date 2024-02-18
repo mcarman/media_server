@@ -1,46 +1,179 @@
----
 # Page meta info, like heading, footer text and nav links
 pageInfo:
   title: Dashy
-  description: Welcome to your new dashboard!
+  description: media_server connections!
   navLinks:
     - title: GitHub
       path: https://github.com/Lissy93/dashy
     - title: Documentation
-      path: https://dashy.to/docs
+      path: https://dashy.to/docs#
+    - title: Media Server info
+      path: https://github.com/mcarman/media_server
 
+###
 # Optional app settings and configuration
+###
 appConfig:
-  theme: colorful
-
-# Main content - An array of sections, each containing an array of items
+  theme: crayola
+  layout: auto
+  iconSize: medium
+  language: en
 sections:
   - name: Getting Started
     icon: fas fa-rocket
     items:
-      - title: Dashy Live
+      - &ref_0
+        title: Dashy Live
         description: Development a project management links for Dashy
         icon: https://i.ibb.co/qWWpD0v/astro-dab-128.png
         url: https://live.dashy.to/
         target: newtab
-      - title: GitHub
+        id: 0_1481_dashylive
+      - &ref_1
+        title: GitHub
         description: Source Code, Issues and Pull Requests
         url: https://github.com/lissy93/dashy
         icon: favicon
-      - title: Docs
+        id: 1_1481_github
+      - &ref_2
+        title: Docs
         description: Configuring & Usage Documentation
         provider: Dashy.to
         icon: far fa-book
         url: https://dashy.to/docs
-      - title: Showcase
+        id: 2_1481_docs
+      - &ref_3
+        title: Showcase
         description: See how others are using Dashy
         url: https://github.com/Lissy93/dashy/blob/master/docs/showcase.md
         icon: far fa-grin-hearts
-      - title: Config Guide
+        id: 3_1481_showcase
+      - &ref_4
+        title: Config Guide
         description: See full list of configuration options
         url: https://github.com/Lissy93/dashy/blob/master/docs/configuring.md
         icon: fas fa-wrench
-      - title: Support
+        id: 4_1481_configguide
+      - &ref_5
+        title: Support
         description: Get help with Dashy, raise a bug, or get in contact
         url: https://github.com/Lissy93/dashy/blob/master/.github/SUPPORT.md
         icon: far fa-hands-helping
+        id: 5_1481_support
+    # filteredItems:
+    #   - *ref_0
+    #   - *ref_1
+    #   - *ref_2
+    #   - *ref_3
+    #   - *ref_4
+    #   - *ref_5
+  - name: Media Server Apps
+    displayData:
+      sortBy: most-used
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - &ref_6
+        title: plex
+        description: Movies, and TV on demand
+        icon: hl-plex #/app/public/icons/png/plex.png
+        url: http://10.0.0.223:32400/web
+        target: newtab
+        id: 0_1579_plex
+      - &ref_7
+        title: plex repo
+        description: plex repo on linux server used for this build
+        icon: hl-plex #/app/public/icons/png/plex.png
+        url: http://
+        target: newtab
+        id: 1_1579_plexrepo
+      - &ref_22
+        title: Airsonic
+        description: Music and Podcasts
+        icon: hl-airsonic #/app/public/icons/png/airsonic.png
+        url: http://10.0.0.223:4040
+        target: newtab
+        id: 1_1579_airsonic
+      - &ref_8
+        title: tautulli
+        description: monitor for the plex server
+        icon: hl-tautulli #/app/public/icons/png/tautulli.png
+        url: http://10.0.0.223:8181
+        target: newtab
+        id: 2_1579_tautulli
+      - &ref_9
+        title: dashboard icons
+        description: data gathering agent
+        icon: /app/public/icons/png/nexcloud-files.png
+        url: https://github.com/walkxcode/dashboard-icons.git
+        target: newtab
+        id: 3_1579_icons
+  #  filteredItems:
+  #    - *ref_6
+  #    - *ref_7
+  #    - *ref_8
+  #    - *ref_9
+  - name: System Monitors
+    icon: /app/
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - &ref_10
+        title: Grafana Dashboard
+        description: Overview of the server and docker containers
+        icon: hl-grafans #/app/public/icons/png/grafana.png
+        url: >-
+          http://10.0.0.223:3000/d/Ss3q6hSZk2/raspberry-pi-and-docker-monitoring-vef?orgId=1&refresh=5s
+        target: newtab
+        id: 0_1536_grafanadashboard
+      - &ref_11
+        title: "dozzle "
+        description: logging for docker containers
+        icon: /app/public/icons/svg/dozzle.svg
+        url: http://10.0.0.223:8282
+        target: newtab
+        id: 1_1536_dozzle
+      - &ref_12
+        title: prometheus
+        description: data sources for grafana
+        icon: /app/public/icons/svg/prometheus.svg
+        url: http://10.0.0.223:9090
+        target: newtab
+        id: 2_1536_prometheus
+  #  filteredItems:
+  #    - *ref_10
+  #    - *ref_11
+  #    - *ref_12
+
+  - name: Useful Links
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items: []
+    filteredItems: []
+
+  - name: documentation
+    icon: /app/
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - &ref_13
+        title: Docker Compose Docs
+        description: Docker info and configurations
+        icon: hl-docker
+        url: https://docs.docker.com/manuals/
+        target: newtab
+        id: 0_1539_dockercomposedocs
