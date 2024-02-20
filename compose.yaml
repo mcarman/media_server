@@ -9,13 +9,6 @@ x-environment: &default_env
     PGID: "${PGID:-1000}"
     TZ: "${TZ:-Etc/UTC}"
 
-#x-logging: &logging_def
-#    driver: "json-file"
-#    options:
-#      max-size: "10m"
-#      max-file: "3"
-#      compress: "true"
-
 #x-healthcheck:
 #  healthcheck:
 #    test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
@@ -113,7 +106,6 @@ services:
       VERSION:  "${PLEX_VERSION:-docker}"
       PLEX_CLAIM_FILE:   "/run/secrets/plex_claim"
       PLEX_ADVERTISE_IP: "${HOST_IP}:32400"
-      # DOCKER_MODS: "ghcr.io/lizardbyte/themerr-plex:latest"
     secrets:
       - plex_claim
     networks:
@@ -217,7 +209,6 @@ services:
       - "./apps/syncthing/data:/data1"
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
-   #   - /path/to/data2:/data2
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped 
@@ -262,7 +253,6 @@ services:
       TZ:   "${TZ:-Etc/UTC}"
       WATCHTOWER_CLEANUP: "true"
       WATCHTOWER_POLL_INTERVAL: "3600"
-    #  command: --interval 3600
     networks:
       - media_net
     volumes:
@@ -315,7 +305,7 @@ services:
       - '--path.rootfs=/host'
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
-      - --collector.filesystem.ignored-mount-points
+      - '--collector.filesystem.ignored-mount-points'
       - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
     volumes:
       - "/:/host:ro,rslave"
@@ -377,16 +367,10 @@ services:
       - TZ=${TZ:-Etc/UTC}
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-    #  - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-    #  - GF_USERS_ALLOW_SIGN_UP=false
-    #  - GF_SERVER_DOMAIN=${DOMAIN}
-    #  - GF_SERVER_ROOT_URL=http://10.0.0.223/grafana
-    #  - GF_SERVER_SERVE_FROM_SUB_PATH=true
     networks:
       - media_net
     ports:
       - 3000:3000
-
 
 #####
 # Volumes section  
@@ -396,14 +380,6 @@ volumes:
     external: true
   plex_data:
     external: true
-#  pp_data:
-#    external: true
-#  pp_media:
-#    external: true
-#  pp_pg_data:
-#    external: true
-#  pp_redis_data:
-#    external: true
 
 ####
 # Networks 

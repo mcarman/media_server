@@ -1,6 +1,6 @@
 my personal basic media server
 
-or my attempts to run a media server (one of various flavors) in docker for arm 64 bit machines. Why? My brother has been buying movies on disc for 20 years. He decided to rip them to a hard drive.
+or my attempts to run a media server (one of various flavors) in docker on arm 64 bit machines. Why? My brother has been buying movies on disc for 20 years. He decided to rip them to a hard drive.
 
 This is a front end for about 550 movies that he purchased over the years.
 
@@ -15,15 +15,15 @@ This media server is plex based with:
         Portainer
     logging/monitoring
         Dozzle
-        dashdot
+        grafana-prometheus-cadvisor stack
     music and podcasts
         airsonic
         musicbrains (tbd)
     utilities
         watchtower
+        syncthing
     maybe some day
         traefik
-        syncthing
 
 A second stack with the arrs is in process. (built on top of this stack).
 
@@ -33,15 +33,16 @@ Plex vs. kodi vs. jelly. I went with plex. The others are good. I started with m
 
 Plex is a pain in some ways, but getting basic cable channels for $5 a month can not be overlooked. No more hulu/youtube or Netflix. I am down to amazon prime, plex, and Disney/ESPN. If I allocate half of my amazon prime subscription fee to media, my total is about $82/mo. Any time you can get it under 100, great.
 
-I set up syncthing, it is a neat little app that syncs multiple places. I have a linux laptop, a desktop, a windows laptop with a gpu (for foto editing), and the various pi servers. suncthing made it easy to keep all in sync.
+I set up syncthing, it is a neat little app that syncs a directory to multiple devices. I have a linux laptop, a desktop, a windows laptop with a gpu (for foto editing), and the various pi servers. Syncthing made it easy to keep all in sync.
 
 IPTV is something that should be considered. Endless password and access issues coupled with clunky payment systems has made this a back burner issue. 
 
-Hardware: Mostly Pi4B with 4 GB of RAM and booted off of an SSd drive in one of the USB 3.0 connectors. I used short fat power cords to eliminate potential resistance issues that could throttle the pis. The other USB 3.0 port was dedicated to an external HDD where the movies and music are locted.
+Hardware: Mostly Pi4B with 4 GB of RAM and booted off of an SSD drive in one of the USB 3.0 connectors. I used short fat power cords to eliminate potential resistance issues that could throttle the pis. The other USB 3.0 port was dedicated to an external HDD where the movies and music are locted.
 
-My primary sources will be added at the bottom of this file someday. The pis were set up as recommended by Raspberry, The standard pi config and command line changes were made, i.e. c groups were enabled. Swap was disabled in favor of ZRAM. The Pis are wired to the network on 1000 GB channels. I disabled bt and wifi to free up some resources (o the point of taking them out to the kernal). It frees up a tiny bit of resources.
+My primary sources will be added at the bottom of this file someday. The pis were set up as recommended by Raspberry, The standard pi config and command line changes were made, i.e. c groups were enabled. Swap was disabled in favor of ZRAM. The Pis are wired to the network on 1000 GB channels. I disabled bt and wifi to free up some resources (to the point of taking them out to the kernal). It frees up a tiny bit of resources.
 
 The pis were overclocked:
+    add to the cmdline.txt file
 
     over_voltage = 6
     arm_freq = 1950
@@ -51,13 +52,17 @@ GPU memory was limitied also. There are sources that claim you can go lower, but
 
     gpu_mem = 256
 
-The required fan was added. The system rarely exceeds 60 C. They were argon fans, but I did not use the argon scripts. I used a new agent written in go. Maybe someone will port to rust, https://github.com/samonzeweb/argononefan.git
+cgroups were enabled by adding the following to the end of the cmdline.txt file
+     
+    cgroup_enable=cpuset cgroup_enable=memory systemd.unified_cgroup_hierarchy=1
 
-Dozzle and dashdot were used for logging and monitoring. I found that heavy monitoring systems like glances and netdata tend stress the pis and they will not play certian movies. so I am usung the lightest apps I could find for monitoring.
+The required fan was added. The system rarely exceeds 60 C. The argoneone argon fans, but I did not use the argon scripts. I used a new agent written in go. Maybe someone will port to rust, https://github.com/samonzeweb/argononefan.git
+
+Dozzle and a grafana-prometheus stack were used for logging and monitoring. I found that heavy monitoring systems like glances and netdata tend to stress the pis and they will not play certian movies. So I am using the lightest apps I could find for monitoring.
 
 I disabled and removed everything associated with bluetooth and wifi. My servers are headless and wired. This was done to reduce strain on the pis. this involved disabling the systemd starts, and blacklisting the kernal mods.
 
-Eventually, I want to compile the apps atively on the pi. This may be a bit of a stretch. The literature says a 10% performance boost with native compilation. That might give me enough juice to get after the video/sound sync that occasionally pops up. Docker also provides some interesting options, where you can have a container that spits ot a binary that can be incorporated into the build.
+Eventually, I want to compile the apps natively on the pi. This may be a bit of a stretch. The literature says a 10% performance boost with native compilation. That might give me enough juice to get after the video/sound sync that occasionally pops up. Docker also provides some interesting options, where you can have a container that spits ot a binary that can be incorporated into the build.
 
 I have tried to integrate trafik into the mix, with limited sucess, I will keep working on that
 
@@ -66,5 +71,10 @@ If you have not guessed by now, I am not a computer scientist. I am a scientist,
 Refs:
 
 Overclock: https://www.seeedstudio.com/blog/2020/02/12/how-to-safely-overclock-your-raspberry-pi-4-to-2-147ghz/
+
 fan control: https://github.com/samonzeweb/argononefan.git
+
 dashy: https://github.com/Lissy93/dashy/tree/master
+
+ZRAM:  https://github.com/foundObjects/zram-swap.git
+
