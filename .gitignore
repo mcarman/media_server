@@ -162,3 +162,6 @@ apps/dashy/icons/png/5etools.png
 apps/dashy/icons/png/act.png
 apps/dashy/icons/png/actual.png
 apps/dashy/icons/png/adblock.png
+
+apps/dashy/icons/png/**  */
+.apps/dashy/icons/pnh/** */
