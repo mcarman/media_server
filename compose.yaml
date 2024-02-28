@@ -3,11 +3,7 @@ version: '3.9'
 
 #####
 # Common Configs
-##### 
-x-environment: &default_env
-    PUID: "${PUID:-1000}"
-    PGID: "${PGID:-1000}"
-    TZ: "${TZ:-Etc/UTC}"
+####
 
 #x-healthcheck:
 #  healthcheck:
@@ -36,10 +32,9 @@ services:
     container_name: portainer
     hostname: $HOSTNAME
     environment:
-      << : *default_env
-      #PUID: "${PUID:-1000}"
-      #PGID: "${PGID:-1000}"
-      #TZ:   "${TZ:-Etc/UTC}"
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
     networks:
       - media_net
     ports:
@@ -58,7 +53,7 @@ services:
 
   ###
   # Dashy alternative to heimdall port 4000
-  ###cd 
+  ###
   dashy:
     # build: .
     image: lissy93/dashy
@@ -67,11 +62,11 @@ services:
     environment:
       PUID: "${PUID:-1000}"
       PGID: "${PGID:-1000}"
-      TZ: "${TZ:-Etc/UTC}"
-      DASHY_CONFIG: "./apps/dashy/config/conf.yml"
+      TZ:   "${TZ:-Etc/UTC}"
+      DASHY_CONFIG: "/app/public/conf.yml"
       HOSTNAME: "${HOSTNAME:-example.com}"
-      HOST_IP: "${HOST_IP}"
-      DOMAIN: "${DOMAIN}"
+      HOST_IP:  "${MEDIA_SERVER_IP}"
+      DOMAIN:   "${DOMAIN}"
       TAUTULLI_GITHUB_AUTH: ${TAUTULLI_GITHUB_AUTH}
     networks:
       - media_net
@@ -105,7 +100,7 @@ services:
       TZ:       "${TZ:-Etc/UTC}"
       VERSION:  "${PLEX_VERSION:-docker}"
       PLEX_CLAIM_FILE:   "/run/secrets/plex_claim"
-      PLEX_ADVERTISE_IP: "${HOST_IP}:32400"
+      PLEX_ADVERTISE_IP: "${MEDIA_SERVER_IP}:32400"
     secrets:
       - plex_claim
     networks:
@@ -146,7 +141,7 @@ services:
       PGID: "${PGID:-1000}"
       TZ:   "${TZ:-Etc/UTC}"
       GUID: "${GUID:-1000}"
-      TAUTULLI_GITHUB_AUTH_FILE: /run/secrets/TAUTULLI_GITHUB_AUTH_FILE
+      TAUTULLI_GITHUB_AUTH_FILE: /run/secrets/tautulli_github_auth
     secrets:
       - tautulli_github_auth
     networks:
@@ -214,7 +209,7 @@ services:
     restart: unless-stopped 
 
   ###
-  # dozzle Log aggregator
+  # dozzle log aggregator
   ###
   dozzle:
     container_name: dozzle
@@ -222,7 +217,7 @@ services:
     environment:
       PUID: "${PUID:-1000}"
       PGID: "${PGID:-1000}"
-      TZ: "${TZ:-Etc/UTC}"
+      TZ:   "${TZ:-Etc/UTC}"
       DOZZLE_LEVEL: "trace"
     networks:
       - media_net
@@ -268,11 +263,10 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     user: "nobody"
-    restart: unless-stopped
     environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-Etc/UTC}
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
     volumes:
       - "./apps/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml"
       - "./apps/prometheus/data:/prometheus/"
@@ -283,23 +277,19 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
       - '--web.enable-lifecycle'  
     ports:
-      - 9090:9090
+      - "9090:9090"
+    networks:
+      - media_net
     depends_on:
       - cadvisor
       - node-exporter
-    links:
-      - cadvisor:cadvisor
-      - node-exporter:node-exporter
-    networks:
-      - media_net
-
+    restart: unless-stopped
   ###
   # Node Exporter and cAdvisor for monitoring
   ###
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node_exporter
-    restart: unless-stopped
     pid: host
     command:
       - '--path.rootfs=/host'
@@ -315,16 +305,16 @@ services:
     networks:
       - media_net
     ports:
-      - 9100:9100
+      - "9100:9100"
+    restart: unless-stopped
 
   ###
   # cAdvisor for monitoring
   ###
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.47.1  #cadvisor-v0.44  #linuxkit/cadvisor:c57efffad1139b2c5df1c3f66c1e3d586ce9e07d-arm64
+    image: gcr.io/cadvisor/cadvisor:v0.47.1 
     container_name: cadvisor
     privileged: true
-    restart: unless-stopped
     volumes:
       - "/:/rootfs:ro"
       - "/var/run:/var/run:rw"
@@ -336,7 +326,7 @@ services:
     devices:
       - /dev/kmsg
     ports:
-      - 8080:8080
+      - "8080:8080"
     networks:
       - media_net
     command:
@@ -345,7 +335,9 @@ services:
       - '--disable_metrics=disk,tcp,udp,percpu,sched,process,referenced_memory,cpu_topology'
       - '--log_dir="/var/log/cadvisor"'
     #other values: filesystem,cpu,precpu,load,uptime,vmstat,meminfo,netstat,perf,net,cpu,
-  
+    restart: unless-stopped
+      
+
   ###
   # Grafana for monitoring
   ###
@@ -353,24 +345,22 @@ services:
     image: grafana/grafana:latest
     user: ":"
     container_name: grafana
-    restart: unless-stopped
     depends_on:
       - prometheus
-    links:
-      - prometheus:prometheus
     volumes:
       - ./apps/grafana/config:/var/lib/grafana
       - ./apps/grafana/provisioning:/etc/grafana/provisioning
     environment:
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
-      - TZ=${TZ:-Etc/UTC}
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ:   ${TZ:-Etc/UTC}
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
     networks:
       - media_net
-    ports:
+    ports:      
       - 3000:3000
+    restart: unless-stopped
 
 #####
 # Volumes section  
