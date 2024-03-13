@@ -50,7 +50,15 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
-
+    #healthcheck:
+    #  test: "wget --no-verbose --tries=1 --spider http://127.0.0.1:9000/api/system/#status || exit 1"
+    #  interval: 60s
+    #  retries: 3
+    #  start_period: 90s
+    #  timeout: 10s
+    #labels:
+    #  - "autoheal=true"
+    
   ###
   # Dashy alternative to heimdall port 4000
   ###
@@ -125,6 +133,14 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+    #healthcheck:
+    #  test: curl --fail http://${MEDIA_SERVER_IP}:32400/web || exit 1
+    #  interval: 60s
+    #  retries: 5
+    #  start_period: 50s
+    #  timeout: 10s
+    #labels:
+    #  - "autoheal=true"
   
   ###
   #  tautulli - Utilities for Plex
@@ -156,6 +172,14 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+    #healthcheck:
+    #  test: curl --fail http://localhost || exit 1
+    #  interval: 55s
+    #  retries: 5
+    ##  start_period: 50s
+     # timeout: 10s
+    #labels:
+    #  - "autoheal=true"
 
   ###
   # Airsonic advanced port 4040
@@ -181,7 +205,35 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+#    healthcheck:
+#      test: "wget --no-verbose --tries=3 --spider http://127.0.0.1:4040 || exit 1"
+#      interval: 75s
+#      retries: 5
+#      start_period: 60s
+#    labels:
+#      - "autoheal=true"
 
+  ###
+  # music tagging app
+  ###
+  #picard:
+  #  image: mikenye/picard:latest
+  #  container_name: picard
+  #  environment:
+  #    PUID: "${PUID:-1000}"
+  #    PGID: "${PGID:-1000}"
+  #    TZ:   "${TZ:-Etc/UTC}"
+  #  networks:
+  #    - "media_net"
+  #  ports:
+  #    - "5800:5800"
+  #  volumes:
+  #    - "./apps/picard:/config:rw"
+  #    - "./media/disc1/media/audio/music/:/storage:rw"
+  #  security_opt:
+  #    - no-new-privileges:true
+  #  restart: unless-stopped 
+  
   ###
   # syncthing to sync files between devices
   ###
@@ -207,6 +259,57 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped 
+    #healthcheck:
+    #  test: curl --fail http://localhost || exit 1
+    #  interval: 60s
+    #  retries: 5
+    #  start_period: 65s
+    #  timeout: 10s
+    #labels:
+    #  - "autoukheal=true"  
+
+  ###
+  # gluetun - vpn and kill switch
+  ###cccccbhikhbkigk
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    hostname: gluetun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+      - SYS_ADMIN
+    environment:
+      VPN_SERVICE_PROVIDER: "${VPN_SERVICE_PROVIDER:-nordvpn}"
+      VPN_TYPE: "${VPN_TYPE:-openvpn}" # openvpn or wireguard
+      OPENVPN_USER: "$OPENVPN_USER"
+      OPENVPN_PASSWORD: "$OPENVPN_PASSWORD"
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    # QUERY: 'filters\[servers_groups\]\[identifier\]=legacy_p2p'
+    #VPN_PASSWORD: $NVPN_PASSWORD
+    #NVPN_PASSWORD: $NVPN_PASSWORD
+      SERVER_REGIONS: "US West,US East,Canada"
+      UPDATER_PERIOD: "12h"
+    #WIREGUARD_PRIVATE_KEY: "$NVPN_WIREGUARD_PRIVATE_KEY"
+    networks:
+      - media_net
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+      - "6999:6999"
+      - "$WEBUI_PORT:8080"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "./apps/gluetun/config:/gluetun"
+      - "/lib/modules:/lib/modules:ro"
+    devices:
+      - "/dev/net/tun"
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
   ###
   # dozzle log aggregator
@@ -228,13 +331,15 @@ services:
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "/dozzle", "healthcheck"]
-      interval: 5m
-      timeout: 15s
-      retries: 3
-      start_period: 60s
-
+    
+    #healthcheck:
+    #  test: ["CMD", "/dozzle", "healthcheck"]
+    #  interval: 5m
+    #  timeout: 15s
+    #  retries: 3
+    #  start_period: 60s
+    #labels:
+    #  - "autoheal=true"
   ###
   # Watchtower to automate updates
   ###
@@ -263,10 +368,17 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     user: "nobody"
+    depends_on:
+      - cadvisor
+      - node-exporter
     environment:
       PUID: "${PUID:-1000}"
       PGID: "${PGID:-1000}"
       TZ:   "${TZ:-Etc/UTC}"
+    networks:
+      - media_net
+    ports:
+      - "9090:9090"
     volumes:
       - "./apps/prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml"
       - "./apps/prometheus/data:/prometheus/"
@@ -276,14 +388,8 @@ services:
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
       - '--web.enable-lifecycle'  
-    ports:
-      - "9090:9090"
-    networks:
-      - media_net
-    depends_on:
-      - cadvisor
-      - node-exporter
     restart: unless-stopped
+  
   ###
   # Node Exporter and cAdvisor for monitoring
   ###
@@ -291,22 +397,30 @@ services:
     image: prom/node-exporter:latest
     container_name: node_exporter
     pid: host
+    networks:
+      - media_net
+    ports:
+      - "9100:9100"
+    volumes:
+      - "/:/host:ro,rslave"
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro" 
     command:
       - '--path.rootfs=/host'
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.ignored-mount-points'
       - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
-    volumes:
-      - "/:/host:ro,rslave"
-      - "/proc:/host/proc:ro"
-      - "/sys:/host/sys:ro"
-      - "/:/rootfs:ro" 
-    networks:
-      - media_net
-    ports:
-      - "9100:9100"
     restart: unless-stopped
+    #healthcheck:
+    #  test: "curl --fail http://localhost:9100/metrics || exit 1"
+    #  
+    # interval: 60s
+    #  retries: 5
+
+    #  start_period: 20s
+    #  timeout: 10s
 
   ###
   # cAdvisor for monitoring
@@ -315,6 +429,10 @@ services:
     image: gcr.io/cadvisor/cadvisor:v0.47.1 
     container_name: cadvisor
     privileged: true
+    networks:
+      - media_net
+    ports:
+      - "8080:8080"
     volumes:
       - "/:/rootfs:ro"
       - "/var/run:/var/run:rw"
@@ -324,11 +442,7 @@ services:
       - "/dev/disk/:/dev/disk:ro"
       - "./apps/cadvisor/logs:/var/log/cadvisor"
     devices:
-      - /dev/kmsg
-    ports:
-      - "8080:8080"
-    networks:
-      - media_net
+      - /dev/kmsg:/dev/kmsg
     command:
       - '--docker_only=true'
       - '--housekeeping_interval=33s'
@@ -337,7 +451,6 @@ services:
     #other values: filesystem,cpu,precpu,load,uptime,vmstat,meminfo,netstat,perf,net,cpu,
     restart: unless-stopped
       
-
   ###
   # Grafana for monitoring
   ###
@@ -347,9 +460,6 @@ services:
     container_name: grafana
     depends_on:
       - prometheus
-    volumes:
-      - ./apps/grafana/config:/var/lib/grafana
-      - ./apps/grafana/provisioning:/etc/grafana/provisioning
     environment:
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
@@ -360,7 +470,39 @@ services:
       - media_net
     ports:      
       - 3000:3000
+    volumes:
+      - ./apps/grafana/config:/var/lib/grafana
+      - ./apps/grafana/provisioning:/etc/grafana/provisioning
     restart: unless-stopped
+    #healthcheck:
+    #  test: GET /api/health Accept application.json --fail || exit 1 #curl --fail http://localhost || exit 1
+    #  interval: 60s
+    #  retries: 5
+    #  start_period: 20s
+    #  timeout: 10s
+    # labels:
+    #  - "autoheal=true"
+  ###
+  # Autoheal to restart containers
+  ###
+  autoheal:
+    #build: autoheal
+    image: willfarrell/autoheal:1.2.0
+    container_name: autoheal
+    tty: true
+    environment:
+      COMPOSE_PROJECT_NAME: $HOSTNAME
+      AUTOHEAL_INTERVAL: "${AUTOHEAL_INTERVAL:-60)}"
+      AUTOHEAL_START_PERIOD: "${AUTOHEAL_START_PERIOD:-300}"
+      AUTOHEAL_DEFAULT_STOP_TIMEOUT: "${AUTOHEAL_DEFAULT_STOP_TIMEOUT:-10}"
+      AUTOHEAL_CONTAINER_LABEL: "${AUTOHEAL_CONTAINER_LABEL:-true}"
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ:   "${TZ:-Etc/UTC}"
+    network_mode: none
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    restart: "no"
 
 #####
 # Volumes section  

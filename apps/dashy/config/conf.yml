@@ -49,39 +49,6 @@ sections:
         url: https://github.com/Lissy93/dashy/blob/master/.github/SUPPORT.md
         icon: far fa-hands-helping
         id: 5_1481_support
-    filteredItems:
-      - title: Dashy Live
-        description: Development a project management links for Dashy
-        icon: https://i.ibb.co/qWWpD0v/astro-dab-128.png
-        url: https://live.dashy.to/
-        target: newtab
-        id: 0_1481_dashylive
-      - title: GitHub
-        description: Source Code, Issues and Pull Requests
-        url: https://github.com/lissy93/dashy
-        icon: favicon
-        id: 1_1481_github
-      - title: Docs
-        description: Configuring & Usage Documentation
-        provider: Dashy.to
-        icon: far fa-book
-        url: https://dashy.to/docs
-        id: 2_1481_docs
-      - title: Showcase
-        description: See how others are using Dashy
-        url: https://github.com/Lissy93/dashy/blob/master/docs/showcase.md
-        icon: far fa-grin-hearts
-        id: 3_1481_showcase
-      - title: Config Guide
-        description: See full list of configuration options
-        url: https://github.com/Lissy93/dashy/blob/master/docs/configuring.md
-        icon: fas fa-wrench
-        id: 4_1481_configguide
-      - title: Support
-        description: Get help with Dashy, raise a bug, or get in contact
-        url: https://github.com/Lissy93/dashy/blob/master/.github/SUPPORT.md
-        icon: far fa-hands-helping
-        id: 5_1481_support
   - name: Media Server Apps
     displayData:
       sortBy: most-used
@@ -90,37 +57,6 @@ sections:
       collapsed: false
       hideForGuests: false
     items:
-      - title: plex
-        description: Movies, and TV on demand
-        icon: hl-plex
-        url: http://10.0.0.223:32400/web
-        target: newtab
-        id: 0_1579_plex
-      - title: plex repo
-        description: plex repo on linux server used for this build
-        icon: hl-plex
-        url: http://
-        target: newtab
-        id: 1_1579_plexrepo
-      - title: Airsonic
-        description: Music and Podcasts
-        icon: hl-airsonic
-        url: http://10.0.0.223:4040
-        target: newtab
-        id: 2_1579_airsonic
-      - title: tautulli
-        description: monitor for the plex server
-        icon: hl-tautulli
-        url: http://10.0.0.223:8181
-        target: newtab
-        id: 3_1579_tautulli
-      - title: dashboard icons
-        description: data gathering agent
-        icon: /app/public/icons/png/nexcloud-files.png
-        url: https://github.com/walkxcode/dashboard-icons.git
-        target: newtab
-        id: 4_1579_dashboardicons
-    filteredItems:
       - title: plex
         description: Movies, and TV on demand
         icon: hl-plex
@@ -184,31 +120,6 @@ sections:
         url: 10.0.0.224:80
         target: newtab
         id: 3_2863_pihole
-    filteredItems:
-      - title: Grafana Dashboard
-        description: Overview of the server and docker containers
-        icon: hl-grafana
-        url: http://10.0.0.223:3000/dashboards
-        target: newtab
-        id: 0_2863_grafanadashboard
-      - title: 'dozzle '
-        description: logging for docker containers
-        icon: hl-dozzle
-        url: http://10.0.0.223:8282
-        target: newtab
-        id: 1_2863_dozzle
-      - title: prometheus
-        description: data sources for grafana
-        icon: hl-prometheus
-        url: http://10.0.0.223:9090
-        target: newtab
-        id: 2_2863_prometheus
-      - title: pi Hole
-        description: network ad blocker
-        icon: hl-pihole
-        url: 10.0.0.224:80
-        target: newtab
-        id: 3_2863_pihole
   - name: Useful Links
     displayData:
       sortBy: default
@@ -228,18 +139,12 @@ sections:
         url: https://thetvdb.com/
         target: newtab
         id: 1_1173_tvdb
-    filteredItems:
-      - title: IMDB
-        description: THE Movie Database
-        icon: hl-imdb
-        url: https://www.imdb.com/
+      - title: I T Tools
+        description: 'Tools: file conv, hashing, PW, etc'
+        icon: https://github.com/CorentinTh/it-tools/blob/main/public/favicon.ico
+        url: https://it-tools.tech/
         target: newtab
-        id: 0_1173_imdb
-      - title: tvdb
-        description: The tv database
-        url: https://thetvdb.com/
-        target: newtab
-        id: 1_1173_tvdb
+        id: 2_1173_ittools
   - name: documentation
     icon: /app/
     displayData:
@@ -249,50 +154,6 @@ sections:
       collapsed: false
       hideForGuests: false
     items:
-      - title: Docker Compose Docs
-        description: Docker info and configurations
-        icon: hl-docker
-        url: https://docs.docker.com/manuals/
-        target: newtab
-        id: 0_1402_dockercomposedocs
-      - title: plex documents
-        description: plex guides
-        icon: hl-plex
-        url: >-
-          https://support.plex.tv/articles/?_gl=1*126oole*_ga*MTUxMDQwMjUxMi4xNzA3NzgwNDg1*_ga_G6FQWNSENB*MTcwODQ5ODg0Mi4yLjEuMTcwODQ5ODg2Ny4zNS4wLjA.
-        target: newtab
-        id: 1_1402_plexdocuments
-      - title: syncthing guide
-        description: how to use syncthing
-        icon: hl-syncthing
-        url: https://docs.syncthing.net/
-        target: newtab
-        id: 2_1402_syncthingguide
-      - title: tautulli guide
-        description: tautulli documentation
-        icon: hl-tautulli
-        url: https://docs.tautulli.com/
-        target: newtab
-        id: 3_1402_tautulliguide
-      - title: Airsonic Guides
-        description: Airsonic guides
-        icon: hl-airsonic
-        url: https://airsonic.github.io/docs/
-        target: newtab
-        id: 4_1402_airsonicguides
-      - title: Dozzle Docs
-        description: Dozzle configs and docs
-        icon: hl-dozzle
-        url: https://dozzle.dev/guide/what-is-dozzle
-        target: newtab
-        id: 5_1402_dozzledocs
-      - title: portainer
-        description: portianer docs
-        icon: hl-portainer
-        url: portainer.io
-        target: newtab
-        id: 6_1402_portainer
-    filteredItems:
       - title: Docker Compose Docs
         description: Docker info and configurations
         icon: hl-docker
